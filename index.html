@@ -255,25 +255,48 @@
         cursor: pointer;
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
       }
 
       .play-button:hover {
         border-color: var(--text-color);
         background: rgba(255, 255, 255, 0.05);
+        transform: scale(1.05);
       }
 
-      .play-button::before {
-        content: '▶';
+      .play-icon, .pause-icon {
+        position: absolute;
         color: var(--text-color);
         font-size: 11px;
-        margin-left: 1px;
-        opacity: 0.8;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .play-button.playing::before {
-        content: '⏸';
-        margin-left: 0;
+      .play-icon {
         opacity: 1;
+        transform: scale(1);
+        margin-left: 1px;
+      }
+
+      .pause-icon {
+        opacity: 0;
+        transform: scale(0.8);
+        font-size: 10px;
+      }
+
+      .play-button.playing .play-icon {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+
+      .play-button.playing .pause-icon {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .play-button.playing {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.6);
       }
 
       .audio-controls {
@@ -290,6 +313,11 @@
         border-radius: 1px;
         cursor: pointer;
         position: relative;
+        transition: height 0.2s ease;
+      }
+
+      .progress-container:hover {
+        height: 2px;
       }
 
       .progress-bar {
@@ -302,7 +330,7 @@
 
       .time-display {
         display: flex;
-        justify-content: between;
+        justify-content: space-between;
         font-size: 0.65rem;
         color: var(--date-color);
         opacity: 0.7;
@@ -326,15 +354,17 @@
       .loop-button:hover {
         border-color: rgba(255, 255, 255, 0.4);
         opacity: 0.9;
+        transform: scale(1.05);
       }
 
       .loop-button.active {
         background: rgba(255, 255, 255, 0.1);
         border-color: rgba(255, 255, 255, 0.4);
         opacity: 1;
+        transform: scale(1.1);
       }
 
-      /* Visualizer audio */
+      /* Visualizer audio amélioré */
       .audio-visualizer {
         width: 80px;
         height: 30px;
@@ -350,21 +380,25 @@
         height: 4px;
         background: rgba(255, 255, 255, 0.3);
         border-radius: 1px;
-        transition: all 0.1s ease;
+        transition: all 0.05s ease;
+        transform-origin: bottom;
       }
 
       .visualizer-bar.active {
-        animation: visualizerPulse 0.3s ease-in-out infinite alternate;
+        animation: visualizerPulse 0.15s ease-in-out infinite alternate;
       }
 
       @keyframes visualizerPulse {
         0% {
           height: 4px;
           background: rgba(255, 255, 255, 0.4);
+          transform: scaleY(1);
         }
         100% {
           height: 20px;
-          background: var(--random-color, rgba(255, 255, 255, 0.8));
+          background: var(--random-color, #ff6b6b);
+          transform: scaleY(1.2);
+          box-shadow: 0 0 8px var(--random-color, #ff6b6b);
         }
       }
 
@@ -432,7 +466,7 @@
   <body>
     <div class="header-container">
       <div class="artist-name">𝐃𝐀𝐍𝐀 𝐍'𝐊𝐀𝐒𝐒𝐀</div>
-      <div class="contact-info">contact.danankassa@gmail.com</div>
+      <div class="contact-info">contact.danankassa@gmail.com    </div>
     </div>
 
     <div class="main-content">
@@ -444,7 +478,10 @@
           </div>
           <div class="content">
             <div class="audio-player">
-              <button class="play-button"></button>
+              <button class="play-button">
+                <span class="play-icon">▶</span>
+                <span class="pause-icon">𝄞</span>
+              </button>
               <div class="audio-controls">
                 <div class="progress-container">
                   <div class="progress-bar"></div>
@@ -465,7 +502,7 @@
                 <div class="visualizer-bar"></div>
               </div>
               <button class="loop-button">⟲</button>
-              <audio preload="metadata"></audio>
+              <audio preload="none" crossorigin="anonymous"></audio>
             </div>
           </div>
         </div>
@@ -476,7 +513,10 @@
           </div>
           <div class="content">
             <div class="audio-player">
-              <button class="play-button"></button>
+              <button class="play-button">
+                <span class="play-icon">▶</span>
+                <span class="pause-icon">𝄞</span>
+              </button>
               <div class="audio-controls">
                 <div class="progress-container">
                   <div class="progress-bar"></div>
@@ -497,7 +537,7 @@
                 <div class="visualizer-bar"></div>
               </div>
               <button class="loop-button">⟲</button>
-              <audio preload="metadata"></audio>
+              <audio preload="none" crossorigin="anonymous"></audio>
             </div>
           </div>
         </div>
@@ -508,7 +548,10 @@
           </div>
           <div class="content">
             <div class="audio-player">
-              <button class="play-button"></button>
+              <button class="play-button">
+                <span class="play-icon">▶</span>
+                <span class="pause-icon">𝄞</span>
+              </button>
               <div class="audio-controls">
                 <div class="progress-container">
                   <div class="progress-bar"></div>
@@ -529,7 +572,7 @@
                 <div class="visualizer-bar"></div>
               </div>
               <button class="loop-button">⟲</button>
-              <audio preload="metadata"></audio>
+              <audio preload="none" crossorigin="anonymous"></audio>
             </div>
           </div>
         </div>
@@ -540,7 +583,10 @@
           </div>
           <div class="content">
             <div class="audio-player">
-              <button class="play-button"></button>
+              <button class="play-button">
+                <span class="play-icon">▶</span>
+                <span class="pause-icon">𝄞</span>
+              </button>
               <div class="audio-controls">
                 <div class="progress-container">
                   <div class="progress-bar"></div>
@@ -561,7 +607,7 @@
                 <div class="visualizer-bar"></div>
               </div>
               <button class="loop-button">⟲</button>
-              <audio preload="metadata"></audio>
+              <audio preload="none" crossorigin="anonymous"></audio>
             </div>
           </div>
         </div>
@@ -572,7 +618,10 @@
           </div>
           <div class="content">
             <div class="audio-player">
-              <button class="play-button"></button>
+              <button class="play-button">
+                <span class="play-icon">▶</span>
+                <span class="pause-icon">𝄞</span>
+              </button>
               <div class="audio-controls">
                 <div class="progress-container">
                   <div class="progress-bar"></div>
@@ -593,7 +642,7 @@
                 <div class="visualizer-bar"></div>
               </div>
               <button class="loop-button">⟲</button>
-              <audio preload="metadata"></audio>
+              <audio preload="none" crossorigin="anonymous"></audio>
             </div>
           </div>
         </div>
@@ -605,6 +654,123 @@
 
     <script>
       let currentlyPlaying = null;
+      let visualizerIntervals = new Map();
+      
+      // Couleurs aléatoires pour le visualiseur
+      const colors = [
+        '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', 
+        '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd',
+        '#ff3742', '#3742fa', '#2f3542', '#ff4757'
+      ];
+
+      // Sécurité renforcée
+      const securityMeasures = {
+        preventRightClick: () => {
+          document.addEventListener('contextmenu', e => {
+            if (e.target.tagName === 'AUDIO' || e.target.closest('.audio-player')) {
+              e.preventDefault();
+              return false;
+            }
+          });
+        },
+        
+        preventKeyboardShortcuts: () => {
+          document.addEventListener('keydown', (e) => {
+            // Empêcher Ctrl+S, Ctrl+Shift+I, F12, etc.
+            if ((e.ctrlKey || e.metaKey) && (
+              e.key === 's' || e.key === 'S' ||
+              e.key === 'u' || e.key === 'U' ||
+              (e.shiftKey && (e.key === 'I' || e.key === 'i'))
+            )) {
+              e.preventDefault();
+              return false;
+            }
+            if (e.key === 'F12') {
+              e.preventDefault();
+              return false;
+            }
+          });
+        },
+        
+        obfuscateAudioSrc: (originalSrc) => {
+          // Ajouter des paramètres aléatoires pour compliquer l'accès direct
+          const timestamp = Date.now();
+          const random = Math.random().toString(36).substring(7);
+          return `${originalSrc}?t=${timestamp}&r=${random}`;
+        }
+      };
+
+      // Initialiser les mesures de sécurité
+      securityMeasures.preventRightClick();
+      securityMeasures.preventKeyboardShortcuts();
+
+      function startVisualizer(visualizerElement, audio) {
+        const bars = visualizerElement.querySelectorAll('.visualizer-bar');
+        
+        const interval = setInterval(() => {
+          if (audio.paused) {
+            bars.forEach(bar => {
+              bar.classList.remove('active');
+              bar.style.setProperty('--random-color', 'rgba(255, 255, 255, 0.3)');
+            });
+            return;
+          }
+          
+          bars.forEach((bar, index) => {
+            // Rythme basé sur le temps de lecture pour synchronisation
+            const timeBasedRandom = Math.sin(audio.currentTime * (index + 1) * 2) * 0.5 + 0.5;
+            const shouldAnimate = Math.random() * timeBasedRandom > 0.3;
+            
+            if (shouldAnimate) {
+              const randomColor = colors[Math.floor(Math.random() * colors.length)];
+              bar.style.setProperty('--random-color', randomColor);
+              bar.classList.add('active');
+              
+              // Arrêter l'animation après un court délai
+              setTimeout(() => {
+                bar.classList.remove('active');
+              }, 150 + Math.random() * 100);
+            }
+          });
+        }, 100); // Fréquence plus rapide pour plus de fluidité
+        
+        return interval;
+      }
+
+      function stopVisualizer(audio) {
+        if (visualizerIntervals.has(audio)) {
+          clearInterval(visualizerIntervals.get(audio));
+          visualizerIntervals.delete(audio);
+        }
+      }
+
+      function resetAudioPlayer(content) {
+        const audio = content.querySelector('audio');
+        const playButton = content.querySelector('.play-button');
+        const progressBar = content.querySelector('.progress-bar');
+        const currentTimeSpan = content.querySelector('.current-time');
+        const totalTimeSpan = content.querySelector('.total-time');
+        const loopButton = content.querySelector('.loop-button');
+        
+        // Arrêter et réinitialiser l'audio
+        if (audio) {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.src = '';
+        }
+        
+        // Réinitialiser l'interface
+        playButton.classList.remove('playing');
+        progressBar.style.width = '0%';
+        currentTimeSpan.textContent = '0:00';
+        totalTimeSpan.textContent = '0:00';
+        loopButton.classList.remove('active');
+        
+        // Arrêter le visualiseur
+        if (audio) {
+          stopVisualizer(audio);
+        }
+      }
 
       document.querySelectorAll('.toggle').forEach(link => {
         link.addEventListener('click', function (e) {
@@ -613,15 +779,11 @@
           const content = parent.querySelector('.content');
           const isOpen = content.classList.contains('open');
 
-          // Fermer tous les autres lecteurs
+          // Fermer tous les autres lecteurs et les réinitialiser
           document.querySelectorAll('.content.open').forEach(otherContent => {
             if (otherContent !== content) {
               otherContent.classList.remove('open');
-              const otherAudio = otherContent.querySelector('audio');
-              if (otherAudio && !otherAudio.paused) {
-                otherAudio.pause();
-                otherContent.querySelector('.play-button').classList.remove('playing');
-              }
+              resetAudioPlayer(otherContent);
             }
           });
 
@@ -634,14 +796,34 @@
             const currentTimeSpan = content.querySelector('.current-time');
             const totalTimeSpan = content.querySelector('.total-time');
             const loopButton = content.querySelector('.loop-button');
+            const visualizer = content.querySelector('.audio-visualizer');
 
-            // Configurer l'audio
-            audio.src = audioSrc;
+            // Réinitialiser avant de configurer
+            resetAudioPlayer(content);
+
+            // Configurer l'audio avec sécurité renforcée
+            const secureAudioSrc = securityMeasures.obfuscateAudioSrc(audioSrc);
+            audio.src = secureAudioSrc;
             
-            // Sécurité : empêcher le téléchargement direct
+            // Sécurité supplémentaire
             audio.addEventListener('contextmenu', e => e.preventDefault());
-            audio.controlsList = 'nodownload noremoteplayback';
+            audio.controlsList = 'nodownload noremoteplayback nofullscreen';
             audio.disablePictureInPicture = true;
+            audio.preload = 'none';
+
+            // Auto-lecture au clic sur le titre
+            audio.addEventListener('canplay', () => {
+              audio.play().then(() => {
+                playButton.classList.add('playing');
+                currentlyPlaying = audio;
+                
+                // Démarrer le visualiseur
+                const visualizerInterval = startVisualizer(visualizer, audio);
+                visualizerIntervals.set(audio, visualizerInterval);
+              }).catch(e => {
+                console.log('Autoplay bloqué par le navigateur');
+              });
+            });
 
             // Gestion du bouton play/pause
             playButton.addEventListener('click', () => {
@@ -649,16 +831,24 @@
                 // Arrêter tout autre audio en cours
                 if (currentlyPlaying && currentlyPlaying !== audio) {
                   currentlyPlaying.pause();
+                  stopVisualizer(currentlyPlaying);
                   document.querySelectorAll('.play-button.playing').forEach(btn => {
                     btn.classList.remove('playing');
                   });
                 }
-                audio.play();
-                playButton.classList.add('playing');
-                currentlyPlaying = audio;
+                
+                audio.play().then(() => {
+                  playButton.classList.add('playing');
+                  currentlyPlaying = audio;
+                  
+                  // Démarrer le visualiseur
+                  const visualizerInterval = startVisualizer(visualizer, audio);
+                  visualizerIntervals.set(audio, visualizerInterval);
+                });
               } else {
                 audio.pause();
                 playButton.classList.remove('playing');
+                stopVisualizer(audio);
                 currentlyPlaying = null;
               }
             });
@@ -692,17 +882,25 @@
             audio.addEventListener('ended', () => {
               if (!audio.loop) {
                 playButton.classList.remove('playing');
+                stopVisualizer(audio);
                 currentlyPlaying = null;
               }
             });
 
+            // Gestion des erreurs
+            audio.addEventListener('error', (e) => {
+              console.error('Erreur de lecture audio:', e);
+              playButton.classList.remove('playing');
+              stopVisualizer(audio);
+              currentlyPlaying = null;
+            });
+
             content.classList.add('open');
           } else {
+            // Fermer et réinitialiser complètement
             content.classList.remove('open');
-            const audio = content.querySelector('audio');
-            if (audio && !audio.paused) {
-              audio.pause();
-              content.querySelector('.play-button').classList.remove('playing');
+            resetAudioPlayer(content);
+            if (currentlyPlaying && currentlyPlaying === content.querySelector('audio')) {
               currentlyPlaying = null;
             }
           }
@@ -716,11 +914,53 @@
         return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
       }
 
-      // Empêcher les raccourcis clavier de téléchargement
-      document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+      // Sécurité supplémentaire - Masquer les sources dans les outils de développement
+      if (typeof DevTools !== 'undefined') {
+        DevTools.close();
+      }
+
+      // Empêcher la sélection de texte sur les éléments audio
+      document.addEventListener('selectstart', (e) => {
+        if (e.target.closest('.audio-player')) {
           e.preventDefault();
         }
+      });
+
+      // Désactiver le glisser-déposer sur les éléments audio
+      document.addEventListener('dragstart', (e) => {
+        if (e.target.closest('.audio-player')) {
+          e.preventDefault();
+        }
+      });
+
+      // Protection contre l'inspection des éléments audio
+      const originalLog = console.log;
+      console.log = function(...args) {
+        const argsStr = args.join(' ');
+        if (!argsStr.includes('demo') && !argsStr.includes('.mp3')) {
+          originalLog.apply(console, args);
+        }
+      };
+
+      // Nettoyer les intervalles lors de la fermeture de la page
+      window.addEventListener('beforeunload', () => {
+        visualizerIntervals.forEach(interval => clearInterval(interval));
+        visualizerIntervals.clear();
+      });
+
+      // Empêcher l'accès direct aux fichiers audio via l'URL
+      window.addEventListener('load', () => {
+        document.querySelectorAll('audio').forEach(audio => {
+          audio.addEventListener('loadstart', () => {
+            // Masquer l'URL réelle dans les DevTools
+            Object.defineProperty(audio, 'src', {
+              get: () => '[PROTECTED]',
+              set: (value) => {
+                audio.setAttribute('src', value);
+              }
+            });
+          });
+        });
       });
     </script>
   </body>
