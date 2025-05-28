@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dana N'Kassa</title>
+    <style>
+      @font-face {
+        font-family: 'pgLang Roman';
+        src: url('/fonts/PgLang.woff2') format('woff2'), url('/fonts/PgLang.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      :root {
+        --bg-color: #111111;
+        --text-color: #ffffff;
+        --date-color: #888888;
+        --footer-color: #111111;
+        --accent-color: #333333;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        font-family: 'Time', serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        letter-spacing: -0.02em;
+        line-height: 1.4;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow-x: hidden;
+      }
+
+      /* Header container pour aligner le nom et le contact */
+      .header-container {
+        position: relative;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 45px 25px 25px;
+      }
+
+      .artist-name {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--text-color);
+        letter-spacing: 0.05em;
+        transition: opacity 0.3s ease;
+      }
+
+      .artist-name:hover {
+        opacity: 0.8;
+      }
+
+      .contact-info {
+        font-size: 0.75rem;
+        color: var(--date-color);
+        letter-spacing: 0.02em;
+        transition: color 0.3s ease;
+      }
+
+      .contact-info:hover {
+        color: var(--text-color);
+      }
+
+      .main-content {
+        display: flex;
+        flex-grow: 1;
+        width: 100%;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .music-list {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        width: 100%;
+        max-width: 940px;
+        margin-bottom: 30px;
+        margin-left: 25px;
+      }
+
+      .music-item {
+        position: relative;
+        cursor: default;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .music-header {
+        display: flex;
+        align-items: baseline;
+        gap: 100px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .track-name {
+        font-family: 'Neue Montreal', sans-serif;
+        font-size: 0.68rem;
+        color: var(--date-color);
+        font-weight: normal;
+        min-width: 120px;
+        flex-shrink: 0;
+        transition: color 0.3s ease;
+        letter-spacing: 0.04em;
+        opacity: 0.9;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .track-name::before {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 100%;
+        height: 0.5px;
+        background-color: var(--date-color);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0.7;
+      }
+
+      .track-name:hover {
+        color: var(--text-color);
+      }
+
+      .track-name:hover::before {
+        transform: scaleX(1);
+      }
+
+      .music-item:hover .track-name {
+        color: var(--text-color);
+      }
+
+      .title {
+        display: none;
+      }
+
+      .title a {
+        font-size: 0.82rem;
+        font-weight: normal;
+        color: var(--text-color);
+        text-decoration: none;
+        cursor: pointer;
+        letter-spacing: -0.01em;
+        position: relative;
+        transition: opacity 0.3s ease;
+      }
+
+      .title a::before {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 100%;
+        height: 0.5px;
+        background-color: var(--text-color);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0.7;
+      }
+
+      .title a:hover::before {
+        transform: scaleX(1);
+      }
+
+      .content-wrapper {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .content {
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateY(-5px);
+        pointer-events: none;
+        margin-left: 170px;
+        position: relative;
+        z-index: 0;
+        width: calc(100% - 170px);
+      }
+
+      .content.open {
+        max-height: 200px;
+        opacity: 1;
+        transform: translateY(0);
+        margin-top: 15px;
+        margin-bottom: 15px;
+        pointer-events: auto;
+      }
+
+      .content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.02);
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      /* Lecteur audio minimaliste et épuré */
+      .audio-player {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        opacity: 0;
+        animation: fadeInPlayer 0.8s ease-out forwards;
+      }
+
+      @keyframes fadeInPlayer {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .play-button {
+        width: 36px;
+        height: 36px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        background: transparent;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        flex-shrink: 0;
+      }
+
+      .play-button:hover {
+        border-color: var(--text-color);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .play-button::before {
+        content: '▶';
+        color: var(--text-color);
+        font-size: 11px;
+        margin-left: 1px;
+        opacity: 0.8;
+      }
+
+      .play-button.playing::before {
+        content: '⏸';
+        margin-left: 0;
+        opacity: 1;
+      }
+
+      .audio-controls {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .progress-container {
+        width: 100%;
+        height: 1px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 1px;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.6);
+        border-radius: 1px;
+        width: 0%;
+        transition: width 0.1s ease;
+      }
+
+      .time-display {
+        display: flex;
+        justify-content: between;
+        font-size: 0.65rem;
+        color: var(--date-color);
+        opacity: 0.7;
+        gap: 8px;
+      }
+
+      .loop-button {
+        width: 28px;
+        height: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: transparent;
+        border-radius: 50%;
+        color: var(--date-color);
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        font-size: 10px;
+        flex-shrink: 0;
+        opacity: 0.6;
+      }
+
+      .loop-button:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+        opacity: 0.9;
+      }
+
+      .loop-button.active {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.4);
+        opacity: 1;
+      }
+
+      /* Visualizer audio */
+      .audio-visualizer {
+        width: 80px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        flex-shrink: 0;
+      }
+
+      .visualizer-bar {
+        width: 2px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 1px;
+        transition: all 0.1s ease;
+      }
+
+      .visualizer-bar.active {
+        animation: visualizerPulse 0.3s ease-in-out infinite alternate;
+      }
+
+      @keyframes visualizerPulse {
+        0% {
+          height: 4px;
+          background: rgba(255, 255, 255, 0.4);
+        }
+        100% {
+          height: 20px;
+          background: var(--random-color, rgba(255, 255, 255, 0.8));
+        }
+      }
+
+      /* Audio caché pour la sécurité */
+      audio {
+        display: none;
+      }
+
+      footer {
+        text-align: center;
+        padding: 25px 20px;
+        font-size: 0.72rem;
+        color: var(--date-color);
+        background-color: var(--footer-color);
+        letter-spacing: 0.03em;
+        position: relative;
+        margin-top: auto;
+      }
+
+      @media (max-width: 768px) {
+        .header-container {
+          padding: 35px 20px 25px;
+          flex-direction: column;
+          gap: 15px;
+          align-items: flex-start;
+        }
+        
+        .artist-name {
+          font-size: 1.4rem;
+        }
+        
+        .content {
+          margin-left: 95px;
+          width: calc(100% - 95px);
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .music-header {
+          flex-direction: column;
+          gap: 6px;
+        }
+        
+        .track-name {
+          opacity: 0.8;
+        }
+        
+        .content {
+          margin-left: 0;
+          width: 100%;
+        }
+        
+        .content.open {
+          margin-top: 12px;
+        }
+        
+        .audio-player {
+          padding: 12px;
+          gap: 12px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header-container">
+      <div class="artist-name">𝐃𝐀𝐍𝐀 𝐍'𝐊𝐀𝐒𝐒𝐀</div>
+      <div class="contact-info">contact.danankassa@gmail.com</div>
+    </div>
+
+    <div class="main-content">
+      <div class="music-list">
+
+        <div class="music-item">
+          <div class="music-header">
+            <div class="track-name toggle" data-audio="demo1.mp3">PRINCIPAL</div>
+          </div>
+          <div class="content">
+            <div class="audio-player">
+              <button class="play-button"></button>
+              <div class="audio-controls">
+                <div class="progress-container">
+                  <div class="progress-bar"></div>
+                </div>
+                <div class="time-display">
+                  <span class="current-time">0:00</span>
+                  <span class="total-time">0:00</span>
+                </div>
+              </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+              </div>
+              <button class="loop-button">⟲</button>
+              <audio preload="metadata"></audio>
+            </div>
+          </div>
+        </div>
+
+        <div class="music-item">
+          <div class="music-header">
+            <div class="track-name toggle" data-audio="demo2.mp3">EXPERIMENTAL</div>
+          </div>
+          <div class="content">
+            <div class="audio-player">
+              <button class="play-button"></button>
+              <div class="audio-controls">
+                <div class="progress-container">
+                  <div class="progress-bar"></div>
+                </div>
+                <div class="time-display">
+                  <span class="current-time">0:00</span>
+                  <span class="total-time">0:00</span>
+                </div>
+              </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+              </div>
+              <button class="loop-button">⟲</button>
+              <audio preload="metadata"></audio>
+            </div>
+          </div>
+        </div>
+
+        <div class="music-item">
+          <div class="music-header">
+            <div class="track-name toggle" data-audio="demo3.mp3">NOUVEAU</div>
+          </div>
+          <div class="content">
+            <div class="audio-player">
+              <button class="play-button"></button>
+              <div class="audio-controls">
+                <div class="progress-container">
+                  <div class="progress-bar"></div>
+                </div>
+                <div class="time-display">
+                  <span class="current-time">0:00</span>
+                  <span class="total-time">0:00</span>
+                </div>
+              </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+              </div>
+              <button class="loop-button">⟲</button>
+              <audio preload="metadata"></audio>
+            </div>
+          </div>
+        </div>
+
+        <div class="music-item">
+          <div class="music-header">
+            <div class="track-name toggle" data-audio="demo4.mp3">MELODIC</div>
+          </div>
+          <div class="content">
+            <div class="audio-player">
+              <button class="play-button"></button>
+              <div class="audio-controls">
+                <div class="progress-container">
+                  <div class="progress-bar"></div>
+                </div>
+                <div class="time-display">
+                  <span class="current-time">0:00</span>
+                  <span class="total-time">0:00</span>
+                </div>
+              </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+              </div>
+              <button class="loop-button">⟲</button>
+              <audio preload="metadata"></audio>
+            </div>
+          </div>
+        </div>
+
+        <div class="music-item">
+          <div class="music-header">
+            <div class="track-name toggle" data-audio="demo5.mp3">DERNIERE</div>
+          </div>
+          <div class="content">
+            <div class="audio-player">
+              <button class="play-button"></button>
+              <div class="audio-controls">
+                <div class="progress-container">
+                  <div class="progress-bar"></div>
+                </div>
+                <div class="time-display">
+                  <span class="current-time">0:00</span>
+                  <span class="total-time">0:00</span>
+                </div>
+              </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+              </div>
+              <button class="loop-button">⟲</button>
+              <audio preload="metadata"></audio>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer>© Dana N'Kassa</footer>
+
+    <script>
+      let currentlyPlaying = null;
+
+      document.querySelectorAll('.toggle').forEach(link => {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          const parent = this.closest('.music-item');
+          const content = parent.querySelector('.content');
+          const isOpen = content.classList.contains('open');
+
+          // Fermer tous les autres lecteurs
+          document.querySelectorAll('.content.open').forEach(otherContent => {
+            if (otherContent !== content) {
+              otherContent.classList.remove('open');
+              const otherAudio = otherContent.querySelector('audio');
+              if (otherAudio && !otherAudio.paused) {
+                otherAudio.pause();
+                otherContent.querySelector('.play-button').classList.remove('playing');
+              }
+            }
+          });
+
+          if (!isOpen) {
+            const audioSrc = this.dataset.audio;
+            const audio = content.querySelector('audio');
+            const playButton = content.querySelector('.play-button');
+            const progressBar = content.querySelector('.progress-bar');
+            const progressContainer = content.querySelector('.progress-container');
+            const currentTimeSpan = content.querySelector('.current-time');
+            const totalTimeSpan = content.querySelector('.total-time');
+            const loopButton = content.querySelector('.loop-button');
+
+            // Configurer l'audio
+            audio.src = audioSrc;
+            
+            // Sécurité : empêcher le téléchargement direct
+            audio.addEventListener('contextmenu', e => e.preventDefault());
+            audio.controlsList = 'nodownload noremoteplayback';
+            audio.disablePictureInPicture = true;
+
+            // Gestion du bouton play/pause
+            playButton.addEventListener('click', () => {
+              if (audio.paused) {
+                // Arrêter tout autre audio en cours
+                if (currentlyPlaying && currentlyPlaying !== audio) {
+                  currentlyPlaying.pause();
+                  document.querySelectorAll('.play-button.playing').forEach(btn => {
+                    btn.classList.remove('playing');
+                  });
+                }
+                audio.play();
+                playButton.classList.add('playing');
+                currentlyPlaying = audio;
+              } else {
+                audio.pause();
+                playButton.classList.remove('playing');
+                currentlyPlaying = null;
+              }
+            });
+
+            // Mise à jour de la barre de progression
+            audio.addEventListener('timeupdate', () => {
+              const progress = (audio.currentTime / audio.duration) * 100;
+              progressBar.style.width = progress + '%';
+              currentTimeSpan.textContent = formatTime(audio.currentTime);
+            });
+
+            // Affichage de la durée totale
+            audio.addEventListener('loadedmetadata', () => {
+              totalTimeSpan.textContent = formatTime(audio.duration);
+            });
+
+            // Clic sur la barre de progression
+            progressContainer.addEventListener('click', (e) => {
+              const rect = progressContainer.getBoundingClientRect();
+              const percent = (e.clientX - rect.left) / rect.width;
+              audio.currentTime = percent * audio.duration;
+            });
+
+            // Bouton de boucle
+            loopButton.addEventListener('click', () => {
+              audio.loop = !audio.loop;
+              loopButton.classList.toggle('active');
+            });
+
+            // Fin de lecture
+            audio.addEventListener('ended', () => {
+              if (!audio.loop) {
+                playButton.classList.remove('playing');
+                currentlyPlaying = null;
+              }
+            });
+
+            content.classList.add('open');
+          } else {
+            content.classList.remove('open');
+            const audio = content.querySelector('audio');
+            if (audio && !audio.paused) {
+              audio.pause();
+              content.querySelector('.play-button').classList.remove('playing');
+              currentlyPlaying = null;
+            }
+          }
+        });
+      });
+
+      function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
+      }
+
+      // Empêcher les raccourcis clavier de téléchargement
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+          e.preventDefault();
+        }
+      });
+    </script>
+  </body>
+</html>
