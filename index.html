@@ -1,967 +1,337 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dana N'Kassa</title>
-    <style>
-      @font-face {
-        font-family: 'pgLang Roman';
-        src: url('/fonts/PgLang.woff2') format('woff2'), url('/fonts/PgLang.woff') format('woff');
-        font-weight: normal;
-        font-style: normal;
-      }
-
-      :root {
-        --bg-color: #111111;
-        --text-color: #ffffff;
-        --date-color: #888888;
-        --footer-color: #111111;
-        --accent-color: #333333;
-      }
-
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-
-      body {
-        font-family: 'Time', serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        letter-spacing: -0.02em;
-        line-height: 1.4;
-        user-select: none;
-        -webkit-user-select: none;
-        overflow-x: hidden;
-      }
-
-      /* Header container pour aligner le nom et le contact */
-      .header-container {
-        position: relative;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 45px 25px 25px;
-      }
-
-      .artist-name {
-        font-size: 1.8rem;
-        font-weight: bold;
-        color: var(--text-color);
-        letter-spacing: 0.05em;
-        transition: opacity 0.3s ease;
-      }
-
-      .artist-name:hover {
-        opacity: 0.8;
-      }
-
-      .contact-info {
-        font-size: 0.75rem;
-        color: var(--date-color);
-        letter-spacing: 0.02em;
-        transition: color 0.3s ease;
-      }
-
-      .contact-info:hover {
-        color: var(--text-color);
-      }
-
-      .main-content {
-        display: flex;
-        flex-grow: 1;
-        width: 100%;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      .music-list {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        width: 100%;
-        max-width: 940px;
-        margin-bottom: 30px;
-        margin-left: 25px;
-      }
-
-      .music-item {
-        position: relative;
-        cursor: default;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .music-header {
-        display: flex;
-        align-items: baseline;
-        gap: 100px;
-        position: relative;
-        z-index: 1;
-      }
-
-      .track-name {
-        font-family: 'Neue Montreal', sans-serif;
-        font-size: 0.68rem;
-        color: var(--date-color);
-        font-weight: normal;
-        min-width: 120px;
-        flex-shrink: 0;
-        transition: color 0.3s ease;
-        letter-spacing: 0.04em;
-        opacity: 0.9;
-        cursor: pointer;
-        position: relative;
-      }
-
-      .track-name::before {
-        content: '';
-        position: absolute;
-        bottom: -3px;
-        left: 0;
-        width: 100%;
-        height: 0.5px;
-        background-color: var(--date-color);
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        opacity: 0.7;
-      }
-
-      .track-name:hover {
-        color: var(--text-color);
-      }
-
-      .track-name:hover::before {
-        transform: scaleX(1);
-      }
-
-      .music-item:hover .track-name {
-        color: var(--text-color);
-      }
-
-      .title {
-        display: none;
-      }
-
-      .title a {
-        font-size: 0.82rem;
-        font-weight: normal;
-        color: var(--text-color);
-        text-decoration: none;
-        cursor: pointer;
-        letter-spacing: -0.01em;
-        position: relative;
-        transition: opacity 0.3s ease;
-      }
-
-      .title a::before {
-        content: '';
-        position: absolute;
-        bottom: -3px;
-        left: 0;
-        width: 100%;
-        height: 0.5px;
-        background-color: var(--text-color);
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        opacity: 0.7;
-      }
-
-      .title a:hover::before {
-        transform: scaleX(1);
-      }
-
-      .content-wrapper {
-        position: relative;
-        overflow: hidden;
-      }
-
-      .content {
-        overflow: hidden;
-        max-height: 0;
-        opacity: 0;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        transform: translateY(-5px);
-        pointer-events: none;
-        margin-left: 170px;
-        position: relative;
-        z-index: 0;
-        width: calc(100% - 170px);
-      }
-
-      .content.open {
-        max-height: 200px;
-        opacity: 1;
-        transform: translateY(0);
-        margin-top: 15px;
-        margin-bottom: 15px;
-        pointer-events: auto;
-      }
-
-      .content::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.02);
-        z-index: -1;
-        pointer-events: none;
-      }
-
-      /* Lecteur audio minimaliste et épuré */
-      .audio-player {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        opacity: 0;
-        animation: fadeInPlayer 0.8s ease-out forwards;
-      }
-
-      @keyframes fadeInPlayer {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .play-button {
-        width: 36px;
-        height: 36px;
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        background: transparent;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        flex-shrink: 0;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .play-button:hover {
-        border-color: var(--text-color);
-        background: rgba(255, 255, 255, 0.05);
-        transform: scale(1.05);
-      }
-
-      .play-icon, .pause-icon {
-        position: absolute;
-        color: var(--text-color);
-        font-size: 11px;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .play-icon {
-        opacity: 1;
-        transform: scale(1);
-        margin-left: 1px;
-      }
-
-      .pause-icon {
-        opacity: 0;
-        transform: scale(0.8);
-        font-size: 10px;
-      }
-
-      .play-button.playing .play-icon {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-
-      .play-button.playing .pause-icon {
-        opacity: 1;
-        transform: scale(1);
-      }
-
-      .play-button.playing {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.6);
-      }
-
-      .audio-controls {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .progress-container {
-        width: 100%;
-        height: 1px;
-        background-color: rgba(255, 255, 255, 0.2);
-        border-radius: 1px;
-        cursor: pointer;
-        position: relative;
-        transition: height 0.2s ease;
-      }
-
-      .progress-container:hover {
-        height: 2px;
-      }
-
-      .progress-bar {
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.6);
-        border-radius: 1px;
-        width: 0%;
-        transition: width 0.1s ease;
-      }
-
-      .time-display {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.65rem;
-        color: var(--date-color);
-        opacity: 0.7;
-        gap: 8px;
-      }
-
-      .loop-button {
-        width: 28px;
-        height: 28px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        background: transparent;
-        border-radius: 50%;
-        color: var(--date-color);
-        cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        font-size: 10px;
-        flex-shrink: 0;
-        opacity: 0.6;
-      }
-
-      .loop-button:hover {
-        border-color: rgba(255, 255, 255, 0.4);
-        opacity: 0.9;
-        transform: scale(1.05);
-      }
-
-      .loop-button.active {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.4);
-        opacity: 1;
-        transform: scale(1.1);
-      }
-
-      /* Visualizer audio amélioré */
-      .audio-visualizer {
-        width: 80px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 2px;
-        flex-shrink: 0;
-      }
-
-      .visualizer-bar {
-        width: 2px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 1px;
-        transition: all 0.05s ease;
-        transform-origin: bottom;
-      }
-
-      .visualizer-bar.active {
-        animation: visualizerPulse 0.15s ease-in-out infinite alternate;
-      }
-
-      @keyframes visualizerPulse {
-        0% {
-          height: 4px;
-          background: rgba(255, 255, 255, 0.4);
-          transform: scaleY(1);
-        }
-        100% {
-          height: 20px;
-          background: var(--random-color, #ff6b6b);
-          transform: scaleY(1.2);
-          box-shadow: 0 0 8px var(--random-color, #ff6b6b);
-        }
-      }
-
-      /* Audio caché pour la sécurité */
-      audio {
-        display: none;
-      }
-
-      footer {
-        text-align: center;
-        padding: 25px 20px;
-        font-size: 0.72rem;
-        color: var(--date-color);
-        background-color: var(--footer-color);
-        letter-spacing: 0.03em;
-        position: relative;
-        margin-top: auto;
-      }
-
-      @media (max-width: 768px) {
-        .header-container {
-          padding: 35px 20px 25px;
-          flex-direction: column;
-          gap: 15px;
-          align-items: flex-start;
-        }
-        
-        .artist-name {
-          font-size: 1.4rem;
-        }
-        
-        .content {
-          margin-left: 95px;
-          width: calc(100% - 95px);
-        }
-      }
-      
-      @media (max-width: 480px) {
-        .music-header {
-          flex-direction: column;
-          gap: 6px;
-        }
-        
-        .track-name {
-          opacity: 0.8;
-        }
-        
-        .content {
-          margin-left: 0;
-          width: 100%;
-        }
-        
-        .content.open {
-          margin-top: 12px;
-        }
-        
-        .audio-player {
-          padding: 12px;
-          gap: 12px;
-        }
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="header-container">
-      <div class="artist-name">𝐃𝐀𝐍𝐀 𝐍'𝐊𝐀𝐒𝐒𝐀</div>
-      <div class="contact-info">contact.danankassa@gmail.com    </div>
-    </div>
-
-    <div class="main-content">
-      <div class="music-list">
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-027.mp3">NM-027</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">°°°</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              <div class="audio-visualizer">
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-              </div>
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="demo2.mp3">EXPERIMENTAL</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">𝄞</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              <div class="audio-visualizer">
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-              </div>
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="demo3.mp3">NOUVEAU</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">𝄞</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              <div class="audio-visualizer">
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-              </div>
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="demo4.mp3">MELODIC</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">𝄞</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              <div class="audio-visualizer">
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-              </div>
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="demo5.mp3">DERNIERE</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">𝄞</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              <div class="audio-visualizer">
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-              </div>
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <footer>© Dana N'Kassa</footer>
-
-    <script>
-      let currentlyPlaying = null;
-      let visualizerIntervals = new Map();
-      
-      // Couleurs aléatoires pour le visualiseur
-      const colors = [
-        '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', 
-        '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd',
-        '#ff3742', '#3742fa', '#2f3542', '#ff4757'
-      ];
-
-      // Sécurité renforcée
-      const securityMeasures = {
-        preventRightClick: () => {
-          document.addEventListener('contextmenu', e => {
-            if (e.target.tagName === 'AUDIO' || e.target.closest('.audio-player')) {
-              e.preventDefault();
-              return false;
-            }
-          });
-        },
-        
-        preventKeyboardShortcuts: () => {
-          document.addEventListener('keydown', (e) => {
-            // Empêcher Ctrl+S, Ctrl+Shift+I, F12, etc.
-            if ((e.ctrlKey || e.metaKey) && (
-              e.key === 's' || e.key === 'S' ||
-              e.key === 'u' || e.key === 'U' ||
-              (e.shiftKey && (e.key === 'I' || e.key === 'i'))
-            )) {
-              e.preventDefault();
-              return false;
-            }
-            if (e.key === 'F12') {
-              e.preventDefault();
-              return false;
-            }
-          });
-        },
-        
-        obfuscateAudioSrc: (originalSrc) => {
-          // Ajouter des paramètres aléatoires pour compliquer l'accès direct
-          const timestamp = Date.now();
-          const random = Math.random().toString(36).substring(7);
-          return `${originalSrc}?t=${timestamp}&r=${random}`;
-        }
-      };
-
-      // Initialiser les mesures de sécurité
-      securityMeasures.preventRightClick();
-      securityMeasures.preventKeyboardShortcuts();
-
-      function startVisualizer(visualizerElement, audio) {
-        const bars = visualizerElement.querySelectorAll('.visualizer-bar');
-        
-        const interval = setInterval(() => {
-          if (audio.paused) {
-            bars.forEach(bar => {
-              bar.classList.remove('active');
-              bar.style.setProperty('--random-color', 'rgba(255, 255, 255, 0.3)');
-            });
-            return;
-          }
-          
-          bars.forEach((bar, index) => {
-            // Rythme basé sur le temps de lecture pour synchronisation
-            const timeBasedRandom = Math.sin(audio.currentTime * (index + 1) * 2) * 0.5 + 0.5;
-            const shouldAnimate = Math.random() * timeBasedRandom > 0.3;
-            
-            if (shouldAnimate) {
-              const randomColor = colors[Math.floor(Math.random() * colors.length)];
-              bar.style.setProperty('--random-color', randomColor);
-              bar.classList.add('active');
-              
-              // Arrêter l'animation après un court délai
-              setTimeout(() => {
-                bar.classList.remove('active');
-              }, 150 + Math.random() * 100);
-            }
-          });
-        }, 100); // Fréquence plus rapide pour plus de fluidité
-        
-        return interval;
-      }
-
-      function stopVisualizer(audio) {
-        if (visualizerIntervals.has(audio)) {
-          clearInterval(visualizerIntervals.get(audio));
-          visualizerIntervals.delete(audio);
-        }
-      }
-
-      function resetAudioPlayer(content) {
-        const audio = content.querySelector('audio');
-        const playButton = content.querySelector('.play-button');
-        const progressBar = content.querySelector('.progress-bar');
-        const currentTimeSpan = content.querySelector('.current-time');
-        const totalTimeSpan = content.querySelector('.total-time');
-        const loopButton = content.querySelector('.loop-button');
-        
-        // Arrêter et réinitialiser l'audio
-        if (audio) {
-          audio.pause();
-          audio.currentTime = 0;
-          audio.src = '';
-        }
-        
-        // Réinitialiser l'interface
-        playButton.classList.remove('playing');
-        progressBar.style.width = '0%';
-        currentTimeSpan.textContent = '0:00';
-        totalTimeSpan.textContent = '0:00';
-        loopButton.classList.remove('active');
-        
-        // Arrêter le visualiseur
-        if (audio) {
-          stopVisualizer(audio);
-        }
-      }
-
-      document.querySelectorAll('.toggle').forEach(link => {
-        link.addEventListener('click', function (e) {
-          e.preventDefault();
-          const parent = this.closest('.music-item');
-          const content = parent.querySelector('.content');
-          const isOpen = content.classList.contains('open');
-
-          // Fermer tous les autres lecteurs et les réinitialiser
-          document.querySelectorAll('.content.open').forEach(otherContent => {
-            if (otherContent !== content) {
-              otherContent.classList.remove('open');
-              resetAudioPlayer(otherContent);
-            }
-          });
-
-          if (!isOpen) {
-            const audioSrc = this.dataset.audio;
-            const audio = content.querySelector('audio');
-            const playButton = content.querySelector('.play-button');
-            const progressBar = content.querySelector('.progress-bar');
-            const progressContainer = content.querySelector('.progress-container');
-            const currentTimeSpan = content.querySelector('.current-time');
-            const totalTimeSpan = content.querySelector('.total-time');
-            const loopButton = content.querySelector('.loop-button');
-            const visualizer = content.querySelector('.audio-visualizer');
-
-            // Réinitialiser avant de configurer
-            resetAudioPlayer(content);
-
-            // Configurer l'audio avec sécurité renforcée
-            const secureAudioSrc = securityMeasures.obfuscateAudioSrc(audioSrc);
-            audio.src = secureAudioSrc;
-            
-            // Sécurité supplémentaire
-            audio.addEventListener('contextmenu', e => e.preventDefault());
-            audio.controlsList = 'nodownload noremoteplayback nofullscreen';
-            audio.disablePictureInPicture = true;
-            audio.preload = 'none';
-
-            // Auto-lecture au clic sur le titre
-            audio.addEventListener('canplay', () => {
-              audio.play().then(() => {
-                playButton.classList.add('playing');
-                currentlyPlaying = audio;
-                
-                // Démarrer le visualiseur
-                const visualizerInterval = startVisualizer(visualizer, audio);
-                visualizerIntervals.set(audio, visualizerInterval);
-              }).catch(e => {
-                console.log('Autoplay bloqué par le navigateur');
-              });
-            });
-
-            // Gestion du bouton play/pause
-            playButton.addEventListener('click', () => {
-              if (audio.paused) {
-                // Arrêter tout autre audio en cours
-                if (currentlyPlaying && currentlyPlaying !== audio) {
-                  currentlyPlaying.pause();
-                  stopVisualizer(currentlyPlaying);
-                  document.querySelectorAll('.play-button.playing').forEach(btn => {
-                    btn.classList.remove('playing');
-                  });
-                }
-                
-                audio.play().then(() => {
-                  playButton.classList.add('playing');
-                  currentlyPlaying = audio;
-                  
-                  // Démarrer le visualiseur
-                  const visualizerInterval = startVisualizer(visualizer, audio);
-                  visualizerIntervals.set(audio, visualizerInterval);
-                });
-              } else {
-                audio.pause();
-                playButton.classList.remove('playing');
-                stopVisualizer(audio);
-                currentlyPlaying = null;
-              }
-            });
-
-            // Mise à jour de la barre de progression
-            audio.addEventListener('timeupdate', () => {
-              const progress = (audio.currentTime / audio.duration) * 100;
-              progressBar.style.width = progress + '%';
-              currentTimeSpan.textContent = formatTime(audio.currentTime);
-            });
-
-            // Affichage de la durée totale
-            audio.addEventListener('loadedmetadata', () => {
-              totalTimeSpan.textContent = formatTime(audio.duration);
-            });
-
-            // Clic sur la barre de progression
-            progressContainer.addEventListener('click', (e) => {
-              const rect = progressContainer.getBoundingClientRect();
-              const percent = (e.clientX - rect.left) / rect.width;
-              audio.currentTime = percent * audio.duration;
-            });
-
-            // Bouton de boucle
-            loopButton.addEventListener('click', () => {
-              audio.loop = !audio.loop;
-              loopButton.classList.toggle('active');
-            });
-
-            // Fin de lecture
-            audio.addEventListener('ended', () => {
-              if (!audio.loop) {
-                playButton.classList.remove('playing');
-                stopVisualizer(audio);
-                currentlyPlaying = null;
-              }
-            });
-
-            // Gestion des erreurs
-            audio.addEventListener('error', (e) => {
-              console.error('Erreur de lecture audio:', e);
-              playButton.classList.remove('playing');
-              stopVisualizer(audio);
-              currentlyPlaying = null;
-            });
-
-            content.classList.add('open');
-          } else {
-            // Fermer et réinitialiser complètement
-            content.classList.remove('open');
-            resetAudioPlayer(content);
-            if (currentlyPlaying && currentlyPlaying === content.querySelector('audio')) {
-              currentlyPlaying = null;
-            }
-          }
-        });
-      });
-
-      function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
-        return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
-      }
-
-      // Sécurité supplémentaire - Masquer les sources dans les outils de développement
-      if (typeof DevTools !== 'undefined') {
-        DevTools.close();
-      }
-
-      // Empêcher la sélection de texte sur les éléments audio
-      document.addEventListener('selectstart', (e) => {
-        if (e.target.closest('.audio-player')) {
-          e.preventDefault();
-        }
-      });
-
-      // Désactiver le glisser-déposer sur les éléments audio
-      document.addEventListener('dragstart', (e) => {
-        if (e.target.closest('.audio-player')) {
-          e.preventDefault();
-        }
-      });
-
-      // Protection contre l'inspection des éléments audio
-      const originalLog = console.log;
-      console.log = function(...args) {
-        const argsStr = args.join(' ');
-        if (!argsStr.includes('demo') && !argsStr.includes('.mp3')) {
-          originalLog.apply(console, args);
-        }
-      };
-
-      // Nettoyer les intervalles lors de la fermeture de la page
-      window.addEventListener('beforeunload', () => {
-        visualizerIntervals.forEach(interval => clearInterval(interval));
-        visualizerIntervals.clear();
-      });
-
-      // Empêcher l'accès direct aux fichiers audio via l'URL
-      window.addEventListener('load', () => {
-        document.querySelectorAll('audio').forEach(audio => {
-          audio.addEventListener('loadstart', () => {
-            // Masquer l'URL réelle dans les DevTools
-            Object.defineProperty(audio, 'src', {
-              get: () => '[PROTECTED]',
-              set: (value) => {
-                audio.setAttribute('src', value);
-              }
-            });
-          });
-        });
-      });
-    </script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dana N'Kassa</title>
+<style>
+:root{--bg:#111;--text:#fff;--gray:#888;--accent:#333}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Time',serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;letter-spacing:-.02em;line-height:1.4;user-select:none;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.header-container{display:flex;justify-content:space-between;align-items:center;padding:45px 25px 25px}
+.artist-name{font-size:1.8rem;font-weight:bold;letter-spacing:.05em;transition:opacity .3s}
+.artist-name:hover{opacity:.8}
+.contact-info{font-size:.75rem;color:var(--gray);letter-spacing:.02em;transition:color .3s;text-align:right}
+.contact-info:hover{color:var(--text)}
+.main-content{flex:1;padding:0 25px}
+.music-list{display:flex;flex-direction:column;gap:18px;max-width:940px;margin-bottom:30px}
+.music-item{position:relative;cursor:default;transition:all .3s cubic-bezier(.16,1,.3,1)}
+.music-header{display:flex;align-items:baseline;gap:100px;position:relative;z-index:1}
+.track-name{font-family:'Neue Montreal',sans-serif;font-size:.68rem;color:var(--gray);min-width:120px;flex-shrink:0;transition:color .3s;letter-spacing:.04em;opacity:.9;cursor:pointer;position:relative}
+.track-name::before{content:'';position:absolute;bottom:-3px;left:0;width:100%;height:.5px;background:var(--gray);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.16,1,.3,1);opacity:.7}
+.track-name:hover{color:var(--text)}
+.track-name:hover::before{transform:scaleX(1)}
+.content-wrapper{position:relative;overflow:hidden}
+.content{overflow:hidden;max-height:0;opacity:0;transition:all .5s cubic-bezier(.16,1,.3,1);transform:translateY(-5px);pointer-events:none;margin-left:170px;width:calc(100% - 170px)}
+.content.open{max-height:200px;opacity:1;transform:translateY(0);margin:15px 0 15px 170px;pointer-events:auto}
+.audio-player{background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px;display:flex;align-items:center;gap:20px;opacity:0;animation:fadeInPlayer .8s ease-out forwards}
+@keyframes fadeInPlayer{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.play-button{width:50px;height:50px;border:2px solid rgba(255,255,255,.3);background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .4s cubic-bezier(.16,1,.3,1);flex-shrink:0;position:relative;overflow:hidden}
+.play-button:hover{border-color:var(--text);background:rgba(255,255,255,.05);transform:scale(1.05)}
+.play-icon,.pause-icon{position:absolute;color:var(--text);font-size:16px;transition:all .4s cubic-bezier(.16,1,.3,1)}
+.play-icon{opacity:1;transform:scale(1);margin-left:2px}
+.pause-icon{opacity:0;transform:scale(0);font-size:14px}
+.play-button.playing .play-icon{opacity:0;transform:scale(0)}
+.play-button.playing .pause-icon{opacity:1;transform:scale(1)}
+.play-button.playing{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6);box-shadow:0 0 20px rgba(255,255,255,.2)}
+.audio-controls{flex:1;display:flex;flex-direction:column;gap:12px}
+.progress-container{width:100%;height:2px;background:rgba(255,255,255,.2);border-radius:2px;cursor:pointer;transition:height .2s}
+.progress-container:hover{height:4px}
+.progress-bar{height:100%;background:linear-gradient(90deg,#ff6b6b,#4ecdc4);border-radius:2px;width:0%;transition:width .1s}
+.time-display{display:flex;justify-content:space-between;font-size:.65rem;color:var(--gray);opacity:.7}
+.loop-button{width:32px;height:32px;border:1px solid rgba(255,255,255,.2);background:transparent;border-radius:50%;color:var(--gray);cursor:pointer;transition:all .4s;font-size:12px;flex-shrink:0;opacity:.6}
+.loop-button:hover{border-color:rgba(255,255,255,.4);opacity:.9;transform:scale(1.05)}
+.loop-button.active{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.4);opacity:1}
+.audio-visualizer{width:120px;height:50px;display:flex;align-items:center;justify-content:center;gap:3px;flex-shrink:0}
+.visualizer-orb{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .1s ease;box-shadow:0 0 0 rgba(255,255,255,0)}
+.visualizer-orb.active{animation:orbPulse .2s ease-in-out infinite alternate}
+@keyframes orbPulse{0%{transform:scale(1);background:rgba(255,255,255,.3);box-shadow:0 0 5px rgba(255,255,255,.3)}100%{transform:scale(2.5);background:var(--random-color,#ff6b6b);box-shadow:0 0 15px var(--random-color,#ff6b6b)}}
+audio{display:none}
+footer{text-align:center;padding:25px 20px;font-size:.72rem;color:var(--gray);background:var(--bg);letter-spacing:.03em;margin-top:auto}
+@media (max-width:768px){.header-container{padding:35px 20px 25px;flex-direction:column;gap:15px;align-items:flex-start}.artist-name{font-size:1.4rem}.content{margin-left:95px;width:calc(100% - 95px)}.content.open{margin-left:95px}}
+@media (max-width:480px){.music-header{flex-direction:column;gap:6px}.content,.content.open{margin-left:0;width:100%}.audio-player{padding:12px;gap:12px}.play-button{width:40px;height:40px}}
+</style>
+</head>
+<body>
+<div class="header-container">
+<div class="artist-name">𝐃𝐀𝐍𝐀 𝐍'𝐊𝐀𝐒𝐒𝐀</div>
+<div class="contact-info">contact.danankassa@gmail.com</div>
+</div>
+<div class="main-content">
+<div class="music-list">
+<div class="music-item">
+<div class="music-header">
+<div class="track-name toggle" data-audio="NM-027.mp3">NM-027</div>
+</div>
+<div class="content">
+<div class="audio-player">
+<button class="play-button">
+<span class="play-icon">▶</span>
+<span class="pause-icon">❚❚</span>
+</button>
+<div class="audio-controls">
+<div class="progress-container">
+<div class="progress-bar"></div>
+</div>
+<div class="time-display">
+<span class="current-time">0:00</span>
+<span class="total-time">0:00</span>
+</div>
+</div>
+<div class="audio-visualizer">
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+</div>
+<button class="loop-button">⟲</button>
+<audio preload="none" crossorigin="anonymous"></audio>
+</div>
+</div>
+</div>
+<div class="music-item">
+<div class="music-header">
+<div class="track-name toggle" data-audio="demo2.mp3">EXPERIMENTAL</div>
+</div>
+<div class="content">
+<div class="audio-player">
+<button class="play-button">
+<span class="play-icon">▶</span>
+<span class="pause-icon">❚❚</span>
+</button>
+<div class="audio-controls">
+<div class="progress-container">
+<div class="progress-bar"></div>
+</div>
+<div class="time-display">
+<span class="current-time">0:00</span>
+<span class="total-time">0:00</span>
+</div>
+</div>
+<div class="audio-visualizer">
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+</div>
+<button class="loop-button">⟲</button>
+<audio preload="none" crossorigin="anonymous"></audio>
+</div>
+</div>
+</div>
+<div class="music-item">
+<div class="music-header">
+<div class="track-name toggle" data-audio="demo3.mp3">NOUVEAU</div>
+</div>
+<div class="content">
+<div class="audio-player">
+<button class="play-button">
+<span class="play-icon">▶</span>
+<span class="pause-icon">❚❚</span>
+</button>
+<div class="audio-controls">
+<div class="progress-container">
+<div class="progress-bar"></div>
+</div>
+<div class="time-display">
+<span class="current-time">0:00</span>
+<span class="total-time">0:00</span>
+</div>
+</div>
+<div class="audio-visualizer">
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+</div>
+<button class="loop-button">⟲</button>
+<audio preload="none" crossorigin="anonymous"></audio>
+</div>
+</div>
+</div>
+<div class="music-item">
+<div class="music-header">
+<div class="track-name toggle" data-audio="demo4.mp3">MELODIC</div>
+</div>
+<div class="content">
+<div class="audio-player">
+<button class="play-button">
+<span class="play-icon">▶</span>
+<span class="pause-icon">❚❚</span>
+</button>
+<div class="audio-controls">
+<div class="progress-container">
+<div class="progress-bar"></div>
+</div>
+<div class="time-display">
+<span class="current-time">0:00</span>
+<span class="total-time">0:00</span>
+</div>
+</div>
+<div class="audio-visualizer">
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+</div>
+<button class="loop-button">⟲</button>
+<audio preload="none" crossorigin="anonymous"></audio>
+</div>
+</div>
+</div>
+<div class="music-item">
+<div class="music-header">
+<div class="track-name toggle" data-audio="demo5.mp3">DERNIERE</div>
+</div>
+<div class="content">
+<div class="audio-player">
+<button class="play-button">
+<span class="play-icon">▶</span>
+<span class="pause-icon">❚❚</span>
+</button>
+<div class="audio-controls">
+<div class="progress-container">
+<div class="progress-bar"></div>
+</div>
+<div class="time-display">
+<span class="current-time">0:00</span>
+<span class="total-time">0:00</span>
+</div>
+</div>
+<div class="audio-visualizer">
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+<div class="visualizer-orb"></div>
+</div>
+<button class="loop-button">⟲</button>
+<audio preload="none" crossorigin="anonymous"></audio>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer>© Dana N'Kassa</footer>
+<script>
+let currentAudio=null,visualizerIntervals=new Map();
+const colors=['#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#feca57','#ff9ff3','#54a0ff','#5f27cd','#ff3742','#3742fa'];
+const security={
+preventActions:()=>{
+document.addEventListener('contextmenu',e=>{if(e.target.tagName==='AUDIO'||e.target.closest('.audio-player'))e.preventDefault()});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['s','S','u','U'].includes(e.key)||(e.shiftKey&&['I','i'].includes(e.key))||e.key==='F12')e.preventDefault()});
+document.addEventListener('selectstart',e=>{if(e.target.closest('.audio-player'))e.preventDefault()});
+document.addEventListener('dragstart',e=>{if(e.target.closest('.audio-player'))e.preventDefault()});
+},
+obfuscate:src=>`${src}?t=${Date.now()}&r=${Math.random().toString(36).substring(7)}`
+};
+security.preventActions();
+function startVisualizer(visualizer,audio){
+const orbs=visualizer.querySelectorAll('.visualizer-orb');
+const interval=setInterval(()=>{
+if(audio.paused){orbs.forEach(orb=>{orb.classList.remove('active');orb.style.setProperty('--random-color','rgba(255,255,255,0.2)')});return}
+orbs.forEach((orb,i)=>{
+const timeRandom=Math.sin(audio.currentTime*(i+1)*3)*.5+.5;
+if(Math.random()*timeRandom>.4){
+const color=colors[Math.floor(Math.random()*colors.length)];
+orb.style.setProperty('--random-color',color);
+orb.classList.add('active');
+setTimeout(()=>orb.classList.remove('active'),120+Math.random()*80)}})},80);
+return interval}
+function stopVisualizer(audio){
+if(visualizerIntervals.has(audio)){clearInterval(visualizerIntervals.get(audio));visualizerIntervals.delete(audio)}}
+function resetPlayer(content){
+const audio=content.querySelector('audio'),playBtn=content.querySelector('.play-button'),progress=content.querySelector('.progress-bar'),currentTime=content.querySelector('.current-time'),totalTime=content.querySelector('.total-time'),loopBtn=content.querySelector('.loop-button');
+if(audio){audio.pause();audio.currentTime=0;audio.src='';stopVisualizer(audio)}
+playBtn?.classList.remove('playing');
+if(progress)progress.style.width='0%';
+if(currentTime)currentTime.textContent='0:00';
+if(totalTime)totalTime.textContent='0:00';
+loopBtn?.classList.remove('active')}
+function formatTime(s){
+if(isNaN(s))return '0:00';
+const m=Math.floor(s/60),sec=Math.floor(s%60);
+return m+':'+(sec<10?'0':'')+sec}
+document.querySelectorAll('.toggle').forEach(link=>{
+link.addEventListener('click',function(e){
+e.preventDefault();
+const parent=this.closest('.music-item'),content=parent.querySelector('.content'),isOpen=content.classList.contains('open');
+document.querySelectorAll('.content.open').forEach(other=>{if(other!==content){other.classList.remove('open');resetPlayer(other)}});
+if(currentAudio){currentAudio.pause();stopVisualizer(currentAudio);currentAudio=null}
+if(!isOpen){
+const audio=content.querySelector('audio'),playBtn=content.querySelector('.play-button'),progress=content.querySelector('.progress-bar'),progressContainer=content.querySelector('.progress-container'),currentTimeSpan=content.querySelector('.current-time'),totalTimeSpan=content.querySelector('.total-time'),loopBtn=content.querySelector('.loop-button'),visualizer=content.querySelector('.audio-visualizer');
+resetPlayer(content);
+audio.src=security.obfuscate(this.dataset.audio);
+audio.controlsList='nodownload noremoteplayback nofullscreen';
+audio.disablePictureInPicture=true;
+audio.preload='none';
+audio.addEventListener('canplay',()=>{
+audio.play().then(()=>{
+playBtn.classList.add('playing');
+currentAudio=audio;
+const interval=startVisualizer(visualizer,audio);
+visualizerIntervals.set(audio,interval)}).catch(()=>console.log('Autoplay blocked'))});
+playBtn.addEventListener('click',()=>{
+if(audio.paused){
+if(currentAudio&&currentAudio!==audio){currentAudio.pause();stopVisualizer(currentAudio);document.querySelectorAll('.play-button.playing').forEach(btn=>btn.classList.remove('playing'))}
+audio.play().then(()=>{
+playBtn.classList.add('playing');
+currentAudio=audio;
+const interval=startVisualizer(visualizer,audio);
+visualizerIntervals.set(audio,interval)})}else{
+audio.pause();
+playBtn.classList.remove('playing');
+stopVisualizer(audio);
+currentAudio=null}});
+audio.addEventListener('timeupdate',()=>{
+progress.style.width=(audio.currentTime/audio.duration)*100+'%';
+currentTimeSpan.textContent=formatTime(audio.currentTime)});
+audio.addEventListener('loadedmetadata',()=>totalTimeSpan.textContent=formatTime(audio.duration));
+progressContainer.addEventListener('click',e=>{
+const rect=progressContainer.getBoundingClientRect();
+audio.currentTime=((e.clientX-rect.left)/rect.width)*audio.duration});
+loopBtn.addEventListener('click',()=>{
+audio.loop=!audio.loop;
+loopBtn.classList.toggle('active')});
+audio.addEventListener('ended',()=>{
+if(!audio.loop){playBtn.classList.remove('playing');stopVisualizer(audio);currentAudio=null}});
+audio.addEventListener('error',()=>{
+playBtn.classList.remove('playing');
+stopVisualizer(audio);
+currentAudio=null});
+content.classList.add('open')}else{
+content.classList.remove('open');
+resetPlayer(content)}})});
+window.addEventListener('beforeunload',()=>{visualizerIntervals.forEach(interval=>clearInterval(interval));visualizerIntervals.clear()});
+</script>
+</body>
 </html>
