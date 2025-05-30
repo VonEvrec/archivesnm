@@ -450,71 +450,355 @@
         .audio-player {
           padding: 12px;
           gap: 12px;
-        }
+          
+      
+      @media (hover: none) and (pointer: coarse) {
+  .play-button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .play-button:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+  
+  .loop-button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .track-name {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Améliorer les transitions pour plus de fluidité */
+.play-button {
+  will-change: transform;
+}
+
+.progress-bar {
+  will-change: width;
+}
+
+.content {
+  will-change: max-height, opacity, transform;
+}
       }
     </style>
   </head>
 <script>
-  // Empêche clic droit
-  document.addEventListener('contextmenu', event => event.preventDefault());
+// Variables globales optimisées
+let currentlyPlaying = null;
+let audioInstances = new Map();
+let isUserInteracting = false;
 
-  // Gestion des players audio
-  const toggles = document.querySelectorAll('.track-name.toggle');
-  const contents = document.querySelectorAll('.content');
-  const players = document.querySelectorAll('.audio-player');
+// Empêche clic droit
+document.addEventListener('contextmenu', event => event.preventDefault());
 
-  toggles.forEach((toggle, index) => {
-    const content = contents[index];
-    const audio = players[index].querySelector('audio');
-    const playButton = players[index].querySelector('.play-button');
-    const progressBar = players[index].querySelector('.progress-bar');
-    const currentTimeElem = players[index].querySelector('.current-time');
-    const totalTimeElem = players[index].querySelector('.total-time');
+// Détection d'interaction utilisateur
+document.addEventListener('touchstart', () => isUserInteracting = true, { passive: true });
+document.addEventListener('click', () => isUserInteracting = true);
 
-    // Précharger la source
-    const src = toggle.dataset.audio;
-    if (src) audio.src = `/demos/${encodeURIComponent(src)}`;
-
-    toggle.addEventListener('click', () => {
-      // Fermer tous les autres
-      contents.forEach(c => c.classList.remove('open'));
-      players.forEach(p => p.querySelector('audio').pause());
-
-      // Ouvrir celui-ci
-      content.classList.add('open');
-      audio.play();
-
-      // Icône lecture
-      playButton.classList.add('playing');
-
-      // Mise à jour du bouton play/pause
-      playButton.onclick = () => {
-        if (audio.paused) {
-          audio.play();
-          playButton.classList.add('playing');
-        } else {
-          audio.pause();
-          playButton.classList.remove('playing');
-        }
-      };
-
-      // Mise à jour du temps
-      audio.addEventListener('loadedmetadata', () => {
-        totalTimeElem.textContent = formatTime(audio.duration);
-      });
-
-      audio.addEventListener('timeupdate', () => {
-        currentTimeElem.textContent = formatTime(audio.currentTime);
-        progressBar.style.width = (audio.currentTime / audio.duration) * 100 + '%';
-      });
+// Sécurité renforcée
+const securityMeasures = {
+  preventRightClick: () => {
+    document.addEventListener('contextmenu', e => {
+      if (e.target.tagName === 'AUDIO' || e.target.closest('.audio-player')) {
+        e.preventDefault();
+        return false;
+      }
     });
+  },
+  
+  preventKeyboardShortcuts: () => {
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && (
+        e.key === 's' || e.key === 'S' ||
+        e.key === 'u' || e.key === 'U' ||
+        (e.shiftKey && (e.key === 'I' || e.key === 'i'))
+      )) {
+        e.preventDefault();
+        return false;
+      }
+      if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+      }
+    });
+  },
+  
+  obfuscateAudioSrc: (originalSrc) => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(7);
+    return `${originalSrc}?t=${timestamp}&r=${random}`;
+  }
+};
 
-    function formatTime(sec) {
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
+// Initialiser les mesures de sécurité
+securityMeasures.preventRightClick();
+securityMeasures.preventKeyboardShortcuts();
+
+// Fonction de formatage du temps
+function formatTime(seconds) {
+  if (isNaN(seconds)) return '0:00';
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
+}
+
+// Fonction optimisée pour arrêter tous les audios
+function stopAllAudio() {
+  audioInstances.forEach((instance, audio) => {
+    if (!audio.paused) {
+      audio.pause();
+      instance.playButton.classList.remove('playing');
     }
   });
+  currentlyPlaying = null;
+}
+
+// Fonction optimisée de réinitialisation
+function resetAudioPlayer(content) {
+  const audio = content.querySelector('audio');
+  const playButton = content.querySelector('.play-button');
+  const progressBar = content.querySelector('.progress-bar');
+  const currentTimeSpan = content.querySelector('.current-time');
+  const totalTimeSpan = content.querySelector('.total-time');
+  const loopButton = content.querySelector('.loop-button');
+  
+  if (audio) {
+    audio.pause();
+    audio.currentTime = 0;
+  }
+  
+  playButton.classList.remove('playing');
+  progressBar.style.width = '0%';
+  currentTimeSpan.textContent = '0:00';
+  totalTimeSpan.textContent = '0:00';
+  loopButton.classList.remove('active');
+}
+
+// Gestionnaire principal optimisé
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.toggle').forEach(link => {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      
+      const parent = this.closest('.music-item');
+      const content = parent.querySelector('.content');
+      const isOpen = content.classList.contains('open');
+
+      // Fermer tous les autres lecteurs
+      document.querySelectorAll('.content.open').forEach(otherContent => {
+        if (otherContent !== content) {
+          otherContent.classList.remove('open');
+          resetAudioPlayer(otherContent);
+        }
+      });
+
+      if (!isOpen) {
+        setupAudioPlayer(content, this.dataset.audio);
+        content.classList.add('open');
+      } else {
+        content.classList.remove('open');
+        resetAudioPlayer(content);
+        if (currentlyPlaying) {
+          currentlyPlaying = null;
+        }
+      }
+    });
+  });
+});
+
+// Configuration optimisée du lecteur audio
+function setupAudioPlayer(content, audioSrc) {
+  const audio = content.querySelector('audio');
+  const playButton = content.querySelector('.play-button');
+  const progressBar = content.querySelector('.progress-bar');
+  const progressContainer = content.querySelector('.progress-container');
+  const currentTimeSpan = content.querySelector('.current-time');
+  const totalTimeSpan = content.querySelector('.total-time');
+  const loopButton = content.querySelector('.loop-button');
+
+  // Réinitialiser complètement
+  resetAudioPlayer(content);
+  
+  // Supprimer tous les anciens event listeners
+  const newAudio = audio.cloneNode(true);
+  audio.parentNode.replaceChild(newAudio, audio);
+  
+  const newPlayButton = playButton.cloneNode(true);
+  playButton.parentNode.replaceChild(newPlayButton, playButton);
+
+  // Références mises à jour
+  const finalAudio = content.querySelector('audio');
+  const finalPlayButton = content.querySelector('.play-button');
+  
+  // Configuration audio optimisée
+  finalAudio.preload = 'metadata';
+  finalAudio.src = securityMeasures.obfuscateAudioSrc(audioSrc);
+  finalAudio.controlsList = 'nodownload noremoteplayback nofullscreen';
+  finalAudio.disablePictureInPicture = true;
+  
+  // Stocker l'instance
+  audioInstances.set(finalAudio, {
+    playButton: finalPlayButton,
+    progressBar,
+    currentTimeSpan,
+    totalTimeSpan,
+    content
+  });
+
+  // Event listeners optimisés avec debouncing
+  let playClickTimeout = null;
+  
+  finalPlayButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    
+    // Debouncing pour éviter les clics multiples
+    if (playClickTimeout) {
+      clearTimeout(playClickTimeout);
+    }
+    
+    playClickTimeout = setTimeout(() => {
+      handlePlayPause(finalAudio, finalPlayButton);
+    }, 50);
+  }, { passive: false });
+
+  // Gestion optimisée play/pause
+  function handlePlayPause(audio, button) {
+    if (audio.paused) {
+      // Arrêter tout autre audio
+      stopAllAudio();
+      
+      // Jouer le nouvel audio
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          button.classList.add('playing');
+          currentlyPlaying = audio;
+        }).catch(e => {
+          console.log('Erreur de lecture:', e);
+          button.classList.remove('playing');
+        });
+      }
+    } else {
+      // Pause immédiate
+      audio.pause();
+      button.classList.remove('playing');
+      currentlyPlaying = null;
+    }
+  }
+
+  // Event listeners audio optimisés
+  finalAudio.addEventListener('loadedmetadata', () => {
+    totalTimeSpan.textContent = formatTime(finalAudio.duration);
+  });
+
+  // Throttling pour timeupdate
+  let lastUpdate = 0;
+  finalAudio.addEventListener('timeupdate', () => {
+    const now = Date.now();
+    if (now - lastUpdate > 100) { // Mise à jour max toutes les 100ms
+      lastUpdate = now;
+      const progress = (finalAudio.currentTime / finalAudio.duration) * 100;
+      progressBar.style.width = progress + '%';
+      currentTimeSpan.textContent = formatTime(finalAudio.currentTime);
+    }
+  });
+
+  // Barre de progression optimisée
+  progressContainer.addEventListener('click', (e) => {
+    e.preventDefault();
+    const rect = progressContainer.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    finalAudio.currentTime = percent * finalAudio.duration;
+  });
+
+  // Bouton loop optimisé
+  const newLoopButton = loopButton.cloneNode(true);
+  loopButton.parentNode.replaceChild(newLoopButton, loopButton);
+  
+  newLoopButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    finalAudio.loop = !finalAudio.loop;
+    newLoopButton.classList.toggle('active');
+  });
+
+  // Gestion de fin optimisée
+  finalAudio.addEventListener('ended', () => {
+    if (!finalAudio.loop) {
+      finalPlayButton.classList.remove('playing');
+      currentlyPlaying = null;
+    }
+  });
+
+  // Gestion d'erreur optimisée
+  finalAudio.addEventListener('error', (e) => {
+    console.error('Erreur audio:', e);
+    finalPlayButton.classList.remove('playing');
+    currentlyPlaying = null;
+  });
+}
+
+// Optimisations pour mobile
+if ('ontouchstart' in window) {
+  // Désactiver le zoom sur double-tap pour les boutons
+  document.addEventListener('touchend', (e) => {
+    if (e.target.closest('.play-button, .loop-button')) {
+      e.preventDefault();
+    }
+  });
+  
+  // Améliorer la réactivité tactile
+  document.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.play-button')) {
+      e.target.style.transform = 'scale(0.95)';
+    }
+  }, { passive: true });
+  
+  document.addEventListener('touchend', (e) => {
+    if (e.target.closest('.play-button')) {
+      setTimeout(() => {
+        e.target.style.transform = '';
+      }, 100);
+    }
+  }, { passive: true });
+}
+
+// Nettoyage des ressources au déchargement
+window.addEventListener('beforeunload', () => {
+  stopAllAudio();
+  audioInstances.clear();
+});
+
+// Protection contre l'inspection
+const originalLog = console.log;
+console.log = function(...args) {
+  const argsStr = args.join(' ');
+  if (!argsStr.includes('demo') && !argsStr.includes('.mp3')) {
+    originalLog.apply(console, args);
+  }
+};
+
+// Empêcher la sélection et le drag
+document.addEventListener('selectstart', (e) => {
+  if (e.target.closest('.audio-player')) {
+    e.preventDefault();
+  }
+});
+
+document.addEventListener('dragstart', (e) => {
+  if (e.target.closest('.audio-player')) {
+    e.preventDefault();
+  }
+});
 </script>
   <body>
     <div class="header-container">
