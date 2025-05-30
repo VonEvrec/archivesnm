@@ -274,60 +274,67 @@
       }
 
       .play-button {
-        width: 36px;
-        height: 36px;
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        background: transparent;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        flex-shrink: 0;
-        position: relative;
-        overflow: hidden;
-      }
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease; /* Réduit de 0.4s à 0.2s */
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  touch-action: manipulation; /* Optimisation tactile */
+  -webkit-tap-highlight-color: transparent;
+}
 
-      .play-button:hover {
-        border-color: var(--text-color);
-        background: rgba(255, 255, 255, 0.05);
-        transform: scale(1.05);
-      }
+.play-button:hover {
+  border-color: var(--text-color);
+  background: rgba(255, 255, 255, 0.05);
+  transform: scale(1.05);
+}
 
-      .play-icon, .pause-icon {
-        position: absolute;
-        color: var(--text-color);
-        font-size: 11px;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      }
+.play-button:active {
+  transform: scale(0.98);
+}
 
-      .play-icon {
-        opacity: 1;
-        transform: scale(1);
-        margin-left: 1px;
-      }
+.play-icon, .pause-icon {
+  position: absolute;
+  color: var(--text-color);
+  font-size: 11px;
+  transition: all 0.15s ease; /* Réduit de 0.4s à 0.15s */
+  pointer-events: none;
+}
 
-      .pause-icon {
-        opacity: 0;
-        transform: scale(0.8);
-        font-size: 10px;
-      }
+.play-icon {
+  opacity: 1;
+  transform: scale(1);
+  margin-left: 1px;
+}
 
-      .play-button.playing .play-icon {
-        opacity: 0;
-        transform: scale(0.8);
-      }
+.pause-icon {
+  opacity: 0;
+  transform: scale(0.8);
+  font-size: 10px;
+}
 
-      .play-button.playing .pause-icon {
-        opacity: 1;
-        transform: scale(1);
-      }
+.play-button.playing .play-icon {
+  opacity: 0;
+  transform: scale(0.8);
+}
 
-      .play-button.playing {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.6);
-      }
+.play-button.playing .pause-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.play-button.playing {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.6);
+}
 
       .audio-controls {
         flex: 1;
@@ -449,8 +456,40 @@
         
         .audio-player {
           padding: 12px;
-          gap: 12px;
-        }
+          gap: 12px;@media (max-width: 768px) {
+  .play-button {
+    width: 40px;
+    height: 40px;
+    transition: all 0.1s ease;
+  }
+  
+  .audio-player {
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .progress-container {
+    height: 3px; /* Plus épais sur mobile */
+  }
+  
+  .progress-container:active {
+    height: 4px;
+  }
+}
+
+/* Suppression des délais de tap sur mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+button, .track-name, .contact-info {
+  touch-action: manipulation;
+}
       }
     </style>
   </head>
@@ -792,64 +831,94 @@
 audio.load();
 
             // Gestion du bouton play/pause
-            playButton.addEventListener('click', () => {
-              if (audio.paused) {
-                // Arrêter tout autre audio en cours
-                if (currentlyPlaying && currentlyPlaying !== audio) {
-                  currentlyPlaying.pause();
-                  
-                  document.querySelectorAll('.play-button.playing').forEach(btn => {
-                    btn.classList.remove('playing');
-                  });
-                }
-                
-                audio.play().then(() => {
-                  playButton.classList.add('playing');
-                  currentlyPlaying = audio;
-                  
-                  
-                });
-              } else {
-                audio.pause();
-                playButton.classList.remove('playing');
-                
-                currentlyPlaying = null;
-              }
-            });
+            let isProcessing = false; // Prévient les double-clics
+
+playButton.addEventListener('click', async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  if (isProcessing) return;
+  isProcessing = true;
+  
+  try {
+    if (audio.paused) {
+      // Arrêter tout autre audio en cours
+      if (currentlyPlaying && currentlyPlaying !== audio) {
+        currentlyPlaying.pause();
+        document.querySelectorAll('.play-button.playing').forEach(btn => {
+          btn.classList.remove('playing');
+        });
+      }
+      
+      // Mise à jour immédiate de l'UI
+      playButton.classList.add('playing');
+      
+      await audio.play();
+      currentlyPlaying = audio;
+    } else {
+      // Mise à jour immédiate de l'UI
+      playButton.classList.remove('playing');
+      
+      audio.pause();
+      currentlyPlaying = null;
+    }
+  } catch (error) {
+    console.error('Erreur de lecture:', error);
+    playButton.classList.remove('playing');
+    currentlyPlaying = null;
+  }
+  
+  // Délai minimal pour éviter les double-clics
+  setTimeout(() => {
+    isProcessing = false;
+  }, 100);
+});
+
+// Gestion tactile optimisée pour mobile
+playButton.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  playButton.style.transform = 'scale(0.95)';
+}, { passive: false });
+
+playButton.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  playButton.style.transform = '';
+}, { passive: false });
 
             // Mise à jour de la barre de progression
-            audio.addEventListener('timeupdate', () => {
-              const progress = (audio.currentTime / audio.duration) * 100;
-              progressBar.style.width = progress + '%';
-              currentTimeSpan.textContent = formatTime(audio.currentTime);
-            });
+            let updateTimeoutId = null;
 
-            // Affichage de la durée totale
-            audio.addEventListener('loadedmetadata', () => {
-              totalTimeSpan.textContent = formatTime(audio.duration);
-            });
+audio.addEventListener('timeupdate', () => {
+  if (updateTimeoutId) return;
+  
+  updateTimeoutId = requestAnimationFrame(() => {
+    const progress = (audio.currentTime / audio.duration) * 100;
+    progressBar.style.width = progress + '%';
+    currentTimeSpan.textContent = formatTime(audio.currentTime);
+    updateTimeoutId = null;
+  });
+});
 
-            // Clic sur la barre de progression
-            progressContainer.addEventListener('click', (e) => {
-              const rect = progressContainer.getBoundingClientRect();
-              const percent = (e.clientX - rect.left) / rect.width;
-              audio.currentTime = percent * audio.duration;
-            });
+// Prévention des redémarrages automatiques
+audio.addEventListener('play', () => {
+  if (!playButton.classList.contains('playing')) {
+    playButton.classList.add('playing');
+  }
+});
 
-            // Bouton de boucle
-            loopButton.addEventListener('click', () => {
-              audio.loop = !audio.loop;
-              loopButton.classList.toggle('active');
-            });
+audio.addEventListener('pause', () => {
+  if (playButton.classList.contains('playing')) {
+    playButton.classList.remove('playing');
+  }
+});
 
-            // Fin de lecture
-            audio.addEventListener('ended', () => {
-              if (!audio.loop) {
-                playButton.classList.remove('playing');
-                
-                currentlyPlaying = null;
-              }
-            });
+// Fin de lecture optimisée
+audio.addEventListener('ended', () => {
+  if (!audio.loop) {
+    playButton.classList.remove('playing');
+    currentlyPlaying = null;
+  }
+});
 
             // Gestion des erreurs
             audio.addEventListener('error', (e) => {
