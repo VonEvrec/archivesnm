@@ -472,66 +472,150 @@
     </style>
   </head>
 <script>
-  // Empêche clic droit
-  document.addEventListener('contextmenu', event => event.preventDefault());
+// ... (gardez tout le code JavaScript existant jusqu'à la partie des event listeners)
 
-  // Gestion des players audio
-  const toggles = document.querySelectorAll('.track-name.toggle');
-  const contents = document.querySelectorAll('.content');
-  const players = document.querySelectorAll('.audio-player');
+document.querySelectorAll('.toggle').forEach(link => {
+  link.addEventListener('click', function (e) {
+    e.preventDefault();
+    const parent = this.closest('.music-item');
+    const content = parent.querySelector('.content');
+    const isOpen = content.classList.contains('open');
 
-  toggles.forEach((toggle, index) => {
-    const content = contents[index];
-    const audio = players[index].querySelector('audio');
-    const playButton = players[index].querySelector('.play-button');
-    const progressBar = players[index].querySelector('.progress-bar');
-    const currentTimeElem = players[index].querySelector('.current-time');
-    const totalTimeElem = players[index].querySelector('.total-time');
+    // Fermer tous les autres lecteurs et les réinitialiser
+    document.querySelectorAll('.content.open').forEach(otherContent => {
+      if (otherContent !== content) {
+        otherContent.classList.remove('open');
+        resetAudioPlayer(otherContent);
+      }
+    });
 
-    // Précharger la source
-    const src = toggle.dataset.audio;
-    if (src) audio.src = `/demos/${encodeURIComponent(src)}`;
+    if (!isOpen) {
+      const audioSrc = this.dataset.audio;
+      const audio = content.querySelector('audio');
+      const playButton = content.querySelector('.play-button');
+      const progressBar = content.querySelector('.progress-bar');
+      const progressContainer = content.querySelector('.progress-container');
+      const currentTimeSpan = content.querySelector('.current-time');
+      const totalTimeSpan = content.querySelector('.total-time');
+      const loopButton = content.querySelector('.loop-button');
+      const visualizer = content.querySelector('.audio-visualizer');
 
-    toggle.addEventListener('click', () => {
-      // Fermer tous les autres
-      contents.forEach(c => c.classList.remove('open'));
-      players.forEach(p => p.querySelector('audio').pause());
+      // Réinitialiser avant de configurer
+      resetAudioPlayer(content);
 
-      // Ouvrir celui-ci
-      content.classList.add('open');
-      audio.play();
+      // Configurer l'audio avec sécurité renforcée
+      const secureAudioSrc = securityMeasures.obfuscateAudioSrc(audioSrc);
+      audio.src = secureAudioSrc;
+      
+      // Sécurité supplémentaire
+      audio.addEventListener('contextmenu', e => e.preventDefault());
+      audio.controlsList = 'nodownload noremoteplayback nofullscreen';
+      audio.disablePictureInPicture = true;
+      audio.preload = 'metadata'; // Changé de 'none' à 'metadata' pour un chargement plus rapide
 
-      // Icône lecture
-      playButton.classList.add('playing');
-
-      // Mise à jour du bouton play/pause
-      playButton.onclick = () => {
-        if (audio.paused) {
-          audio.play();
+      // MODIFICATION PRINCIPALE: Auto-lecture immédiate quand on ouvre le player
+      audio.addEventListener('canplay', () => {
+        // Démarrer automatiquement la lecture
+        audio.play().then(() => {
           playButton.classList.add('playing');
+          currentlyPlaying = audio;
+          
+          // Démarrer le visualiseur
+          const visualizerInterval = startVisualizer(visualizer, audio);
+          visualizerIntervals.set(audio, visualizerInterval);
+        }).catch(e => {
+          console.log('Autoplay bloqué par le navigateur');
+          // Si l'autoplay est bloqué, au moins préparer le bouton
+          playButton.classList.remove('playing');
+        });
+      });
+
+      // Ouvrir le contenu ET forcer le chargement pour déclencher canplay
+      content.classList.add('open');
+      audio.load(); // Force le chargement de l'audio
+
+      // Gestion du bouton play/pause (reste identique)
+      playButton.addEventListener('click', () => {
+        if (audio.paused) {
+          // Arrêter tout autre audio en cours
+          if (currentlyPlaying && currentlyPlaying !== audio) {
+            currentlyPlaying.pause();
+            stopVisualizer(currentlyPlaying);
+            document.querySelectorAll('.play-button.playing').forEach(btn => {
+              btn.classList.remove('playing');
+            });
+          }
+          
+          audio.play().then(() => {
+            playButton.classList.add('playing');
+            currentlyPlaying = audio;
+            
+            // Démarrer le visualiseur
+            const visualizerInterval = startVisualizer(visualizer, audio);
+            visualizerIntervals.set(audio, visualizerInterval);
+          });
         } else {
           audio.pause();
           playButton.classList.remove('playing');
+          stopVisualizer(audio);
+          currentlyPlaying = null;
         }
-      };
-
-      // Mise à jour du temps
-      audio.addEventListener('loadedmetadata', () => {
-        totalTimeElem.textContent = formatTime(audio.duration);
       });
 
+      // Mise à jour de la barre de progression
       audio.addEventListener('timeupdate', () => {
-        currentTimeElem.textContent = formatTime(audio.currentTime);
-        progressBar.style.width = (audio.currentTime / audio.duration) * 100 + '%';
+        const progress = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = progress + '%';
+        currentTimeSpan.textContent = formatTime(audio.currentTime);
       });
-    });
 
-    function formatTime(sec) {
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
+      // Affichage de la durée totale
+      audio.addEventListener('loadedmetadata', () => {
+        totalTimeSpan.textContent = formatTime(audio.duration);
+      });
+
+      // Clic sur la barre de progression
+      progressContainer.addEventListener('click', (e) => {
+        const rect = progressContainer.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = percent * audio.duration;
+      });
+
+      // Bouton de boucle
+      loopButton.addEventListener('click', () => {
+        audio.loop = !audio.loop;
+        loopButton.classList.toggle('active');
+      });
+
+      // Fin de lecture
+      audio.addEventListener('ended', () => {
+        if (!audio.loop) {
+          playButton.classList.remove('playing');
+          stopVisualizer(audio);
+          currentlyPlaying = null;
+        }
+      });
+
+      // Gestion des erreurs
+      audio.addEventListener('error', (e) => {
+        console.error('Erreur de lecture audio:', e);
+        playButton.classList.remove('playing');
+        stopVisualizer(audio);
+        currentlyPlaying = null;
+      });
+
+    } else {
+      // Fermer et réinitialiser complètement
+      content.classList.remove('open');
+      resetAudioPlayer(content);
+      if (currentlyPlaying && currentlyPlaying === content.querySelector('audio')) {
+        currentlyPlaying = null;
+      }
     }
   });
+});
+
+// ... (gardez le reste du code JavaScript tel quel)
 </script>
   <body>
     <div class="header-container">
