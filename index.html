@@ -903,18 +903,27 @@
             audio.preload = 'none';
 
             // Auto-lecture au clic sur le titre
-            audio.addEventListener('canplay', () => {
-              audio.play().then(() => {
-                playButton.classList.add('playing');
-                currentlyPlaying = audio;
-                
-                // Démarrer le visualiseur
-                const visualizerInterval = startVisualizer(visualizer, audio);
-                visualizerIntervals.set(audio, visualizerInterval);
-              }).catch(e => {
-                console.log('Autoplay bloqué par le navigateur');
-              });
-            });
+            audio.addEventListener('canplaythrough', () => {
+  // Jouer automatiquement dès que c'est possible
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      playButton.classList.add('playing');
+      currentlyPlaying = audio;
+      
+      // Démarrer le visualiseur
+      const visualizerInterval = startVisualizer(visualizer, audio);
+      visualizerIntervals.set(audio, visualizerInterval);
+    }).catch(e => {
+      console.log('Autoplay nécessite une interaction utilisateur');
+      // Forcer la lecture au premier clic
+      playButton.click();
+    });
+  }
+});
+
+// Forcer le chargement et la lecture
+audio.load();
 
             // Gestion du bouton play/pause
             playButton.addEventListener('click', () => {
@@ -987,6 +996,19 @@
             });
 
             content.classList.add('open');
+
+// Force la lecture après ouverture
+setTimeout(() => {
+  if (audio.readyState >= 2) { // HAVE_CURRENT_DATA
+    audio.play().then(() => {
+      playButton.classList.add('playing');
+      currentlyPlaying = audio;
+      
+      const visualizerInterval = startVisualizer(visualizer, audio);
+      visualizerIntervals.set(audio, visualizerInterval);
+    }).catch(e => console.log('Lecture manuelle requise'));
+  }
+}, 100);
           } else {
             // Fermer et réinitialiser complètement
             content.classList.remove('open');
