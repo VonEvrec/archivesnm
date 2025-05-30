@@ -796,23 +796,23 @@
       securityMeasures.preventKeyboardShortcuts();
 
       function startVisualizer(visualizerElement, audio) {
-  const bars = visualizerElement.querySelectorAll('.visualizer-bar');
-  
-  const interval = setInterval(() => {
+        const bars = visualizerElement.querySelectorAll('.visualizer-bar');
+        
+        const interval = setInterval(() => {
     if (audio.paused) {
       bars.forEach(bar => {
         bar.classList.remove('active');
         bar.style.setProperty('--random-color', 'rgba(255, 255, 255, 0.2)');
       });
       return;
-    }
-    
-    bars.forEach((bar, index) => {
-      // Mouvement plus subtil et moins fréquent
-      const timeBasedRandom = Math.sin(audio.currentTime * (index + 1) * 1.5) * 0.3 + 0.4;
-      const shouldAnimate = Math.random() * timeBasedRandom > 0.6; // Seuil plus élevé = moins d'animations
-      
-      if (shouldAnimate) {
+          }
+          
+          bars.forEach((bar, index) => {
+            // Rythme basé sur le temps de lecture pour synchronisation
+            const timeBasedRandom = Math.sin(audio.currentTime * (index + 1) * 1.5) * 0.3 + 0.4;
+            const shouldAnimate = Math.random() * timeBasedRandom > 0.6;
+            
+            if (shouldAnimate) {
         // Couleurs plus douces et transparentes
         const softColors = [
           'rgba(255, 107, 107, 0.4)', 'rgba(78, 205, 196, 0.4)', 
@@ -833,27 +833,6 @@
   }, 150); // Fréquence plus lente (était 100ms)
   
   return interval;
-}
-          
-          bars.forEach((bar, index) => {
-            // Rythme basé sur le temps de lecture pour synchronisation
-            const timeBasedRandom = Math.sin(audio.currentTime * (index + 1) * 2) * 0.5 + 0.5;
-            const shouldAnimate = Math.random() * timeBasedRandom > 0.3;
-            
-            if (shouldAnimate) {
-              const randomColor = colors[Math.floor(Math.random() * colors.length)];
-              bar.style.setProperty('--random-color', randomColor);
-              bar.classList.add('active');
-              
-              // Arrêter l'animation après un court délai
-              setTimeout(() => {
-                bar.classList.remove('active');
-              }, 150 + Math.random() * 100);
-            }
-          });
-        }, 100); // Fréquence plus rapide pour plus de fluidité
-        
-        return interval;
       }
 
       function stopVisualizer(audio) {
