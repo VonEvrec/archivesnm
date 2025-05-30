@@ -78,10 +78,31 @@
   transition: color 0.3s ease;
   text-align: right;
   flex: 1;
-  max-width: 300px; /* Limitation de largeur pour éviter le débordement */
-  margin-right: 10px; /* Marge pour éviter le bord */
-  white-space: nowrap; /* Empêche le retour à la ligne */
-  overflow: visible; /* Assure la visibilité complète */
+  margin-right: 50px;
+  cursor: pointer;
+  position: relative;
+}
+
+.contact-info::before {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 100%;
+  height: 0.5px;
+  background-color: var(--date-color);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.7;
+}
+
+.contact-info:hover {
+  color: var(--text-color);
+}
+
+.contact-info:hover::before {
+  transform: scaleX(1);
 }
 
       .main-content {
