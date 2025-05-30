@@ -796,16 +796,44 @@
       securityMeasures.preventKeyboardShortcuts();
 
       function startVisualizer(visualizerElement, audio) {
-        const bars = visualizerElement.querySelectorAll('.visualizer-bar');
+  const bars = visualizerElement.querySelectorAll('.visualizer-bar');
+  
+  const interval = setInterval(() => {
+    if (audio.paused) {
+      bars.forEach(bar => {
+        bar.classList.remove('active');
+        bar.style.setProperty('--random-color', 'rgba(255, 255, 255, 0.2)');
+      });
+      return;
+    }
+    
+    bars.forEach((bar, index) => {
+      // Mouvement plus subtil et moins fréquent
+      const timeBasedRandom = Math.sin(audio.currentTime * (index + 1) * 1.5) * 0.3 + 0.4;
+      const shouldAnimate = Math.random() * timeBasedRandom > 0.6; // Seuil plus élevé = moins d'animations
+      
+      if (shouldAnimate) {
+        // Couleurs plus douces et transparentes
+        const softColors = [
+          'rgba(255, 107, 107, 0.4)', 'rgba(78, 205, 196, 0.4)', 
+          'rgba(69, 183, 209, 0.4)', 'rgba(150, 206, 180, 0.4)', 
+          'rgba(254, 202, 87, 0.4)', 'rgba(255, 159, 243, 0.4)',
+          'rgba(84, 160, 255, 0.4)', 'rgba(95, 39, 205, 0.4)'
+        ];
+        const randomColor = softColors[Math.floor(Math.random() * softColors.length)];
+        bar.style.setProperty('--random-color', randomColor);
+        bar.classList.add('active');
         
-        const interval = setInterval(() => {
-          if (audio.paused) {
-            bars.forEach(bar => {
-              bar.classList.remove('active');
-              bar.style.setProperty('--random-color', 'rgba(255, 255, 255, 0.3)');
-            });
-            return;
-          }
+        // Animation plus courte
+        setTimeout(() => {
+          bar.classList.remove('active');
+        }, 100 + Math.random() * 50); // Durée réduite
+      }
+    });
+  }, 150); // Fréquence plus lente (était 100ms)
+  
+  return interval;
+}
           
           bars.forEach((bar, index) => {
             // Rythme basé sur le temps de lecture pour synchronisation
