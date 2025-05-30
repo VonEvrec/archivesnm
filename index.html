@@ -394,7 +394,44 @@
         transform: scale(1.1);
       }
 
-     
+      /* Visualizer audio amélioré */
+      .audio-visualizer {
+        width: 60px;
+        height: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        flex-shrink: 0;
+      }
+
+      .visualizer-bar {
+        width: 2px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 1px;
+        transition: all 0.05s ease;
+        transform-origin: bottom;
+      }
+
+      .visualizer-bar.active {
+        animation: visualizerPulse 0.15s ease-in-out infinite alternate;
+      }
+
+      @keyframes visualizerPulse {
+        0% {
+          height: 4px;
+          background: rgba(255, 255, 255, 0.4);
+          transform: scaleY(1);
+        }
+        100% {
+          height: 20px;
+          background: var(--random-color, #ff6b6b);
+          transform: scaleY(1.2);
+          box-shadow: 0 0 8px var(--random-color, #ff6b6b);
+        }
+      }
+
       /* Audio caché pour la sécurité */
       audio {
         display: none;
@@ -545,6 +582,16 @@
                   <span class="total-time">0:00</span>
                 </div>
               </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+              </div>
               <button class="loop-button">⟲</button>
               <audio preload="none" crossorigin="anonymous"></audio>
             </div>
@@ -569,6 +616,16 @@
                   <span class="current-time">0:00</span>
                   <span class="total-time">0:00</span>
                 </div>
+              </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
               </div>
               <button class="loop-button">⟲</button>
               <audio preload="none" crossorigin="anonymous"></audio>
@@ -595,6 +652,16 @@
                   <span class="total-time">0:00</span>
                 </div>
               </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+              </div>
               <button class="loop-button">⟲</button>
               <audio preload="none" crossorigin="anonymous"></audio>
             </div>
@@ -619,6 +686,16 @@
                   <span class="current-time">0:00</span>
                   <span class="total-time">0:00</span>
                 </div>
+              </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
               </div>
               <button class="loop-button">⟲</button>
               <audio preload="none" crossorigin="anonymous"></audio>
@@ -645,6 +722,16 @@
                   <span class="total-time">0:00</span>
                 </div>
               </div>
+              <div class="audio-visualizer">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+              </div>
               <button class="loop-button">⟲</button>
               <audio preload="none" crossorigin="anonymous"></audio>
             </div>
@@ -654,11 +741,19 @@
       </div>
     </div>
 
-    <footer>© Dana N'kassa</footer>
+    <footer>© Dana N'Kassa</footer>
 
     <script>
       let currentlyPlaying = null;
+      let visualizerIntervals = new Map();
       
+      // Couleurs aléatoires pour le visualiseur
+      const colors = [
+        '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', 
+        '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd',
+        '#ff3742', '#3742fa', '#2f3542', '#ff4757'
+      ];
+
       // Sécurité renforcée
       const securityMeasures = {
         preventRightClick: () => {
@@ -700,7 +795,45 @@
       securityMeasures.preventRightClick();
       securityMeasures.preventKeyboardShortcuts();
 
-    
+      function startVisualizer(visualizerElement, audio) {
+        const bars = visualizerElement.querySelectorAll('.visualizer-bar');
+        
+        const interval = setInterval(() => {
+          if (audio.paused) {
+            bars.forEach(bar => {
+              bar.classList.remove('active');
+              bar.style.setProperty('--random-color', 'rgba(255, 255, 255, 0.3)');
+            });
+            return;
+          }
+          
+          bars.forEach((bar, index) => {
+            // Rythme basé sur le temps de lecture pour synchronisation
+            const timeBasedRandom = Math.sin(audio.currentTime * (index + 1) * 2) * 0.5 + 0.5;
+            const shouldAnimate = Math.random() * timeBasedRandom > 0.3;
+            
+            if (shouldAnimate) {
+              const randomColor = colors[Math.floor(Math.random() * colors.length)];
+              bar.style.setProperty('--random-color', randomColor);
+              bar.classList.add('active');
+              
+              // Arrêter l'animation après un court délai
+              setTimeout(() => {
+                bar.classList.remove('active');
+              }, 150 + Math.random() * 100);
+            }
+          });
+        }, 100); // Fréquence plus rapide pour plus de fluidité
+        
+        return interval;
+      }
+
+      function stopVisualizer(audio) {
+        if (visualizerIntervals.has(audio)) {
+          clearInterval(visualizerIntervals.get(audio));
+          visualizerIntervals.delete(audio);
+        }
+      }
 
       function resetAudioPlayer(content) {
         const audio = content.querySelector('audio');
@@ -724,6 +857,9 @@
         totalTimeSpan.textContent = '0:00';
         loopButton.classList.remove('active');
         
+        // Arrêter le visualiseur
+        if (audio) {
+          stopVisualizer(audio);
         }
       }
 
@@ -751,7 +887,8 @@
             const currentTimeSpan = content.querySelector('.current-time');
             const totalTimeSpan = content.querySelector('.total-time');
             const loopButton = content.querySelector('.loop-button');
-          
+            const visualizer = content.querySelector('.audio-visualizer');
+
             // Réinitialiser avant de configurer
             resetAudioPlayer(content);
 
@@ -774,7 +911,10 @@
       playButton.classList.add('playing');
       currentlyPlaying = audio;
       
-      }).catch(e => {
+      // Démarrer le visualiseur
+      const visualizerInterval = startVisualizer(visualizer, audio);
+      visualizerIntervals.set(audio, visualizerInterval);
+    }).catch(e => {
       console.log('Autoplay nécessite une interaction utilisateur');
       // Forcer la lecture au premier clic
       playButton.click();
@@ -791,6 +931,7 @@ audio.load();
                 // Arrêter tout autre audio en cours
                 if (currentlyPlaying && currentlyPlaying !== audio) {
                   currentlyPlaying.pause();
+                  stopVisualizer(currentlyPlaying);
                   document.querySelectorAll('.play-button.playing').forEach(btn => {
                     btn.classList.remove('playing');
                   });
@@ -800,10 +941,14 @@ audio.load();
                   playButton.classList.add('playing');
                   currentlyPlaying = audio;
                   
-                  });
+                  // Démarrer le visualiseur
+                  const visualizerInterval = startVisualizer(visualizer, audio);
+                  visualizerIntervals.set(audio, visualizerInterval);
+                });
               } else {
                 audio.pause();
                 playButton.classList.remove('playing');
+                stopVisualizer(audio);
                 currentlyPlaying = null;
               }
             });
@@ -837,6 +982,7 @@ audio.load();
             audio.addEventListener('ended', () => {
               if (!audio.loop) {
                 playButton.classList.remove('playing');
+                stopVisualizer(audio);
                 currentlyPlaying = null;
               }
             });
@@ -845,6 +991,7 @@ audio.load();
             audio.addEventListener('error', (e) => {
               console.error('Erreur de lecture audio:', e);
               playButton.classList.remove('playing');
+              stopVisualizer(audio);
               currentlyPlaying = null;
             });
 
@@ -857,7 +1004,9 @@ setTimeout(() => {
       playButton.classList.add('playing');
       currentlyPlaying = audio;
       
-     }).catch(e => console.log('Lecture manuelle requise'));
+      const visualizerInterval = startVisualizer(visualizer, audio);
+      visualizerIntervals.set(audio, visualizerInterval);
+    }).catch(e => console.log('Lecture manuelle requise'));
   }
 }, 100);
           } else {
@@ -905,6 +1054,12 @@ setTimeout(() => {
           originalLog.apply(console, args);
         }
       };
+
+      // Nettoyer les intervalles lors de la fermeture de la page
+      window.addEventListener('beforeunload', () => {
+        visualizerIntervals.forEach(interval => clearInterval(interval));
+        visualizerIntervals.clear();
+      });
 
       // Empêcher l'accès direct aux fichiers audio via l'URL
       window.addEventListener('load', () => {
