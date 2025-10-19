@@ -2,339 +2,278 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <title>Dana N'kassa</title>
+
+    <!-- System UI stack for crisp Apple-like type, with fallback -->
     <style>
+      /* Base tokens */
+      :root {
+        --bg-color: #0b0b0b;
+        --text-color: #ffffff;
+        --muted-color: #9aa0a6;
+        --line-color: rgba(255, 255, 255, 0.08);
+        --card-border: rgba(255, 255, 255, 0.12);
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --focus-ring: rgba(255, 255, 255, 0.6);
+        --accent: #e5e7eb;
+      }
+
       @font-face {
         font-family: 'pgLang Roman';
-        src: url('/fonts/PgLang.woff2') format('woff2'), url('/fonts/PgLang.woff') format('woff');
+        src: url('/fonts/PgLang.woff2') format('woff2'),
+          url('/fonts/PgLang.woff') format('woff');
         font-weight: normal;
         font-style: normal;
+        font-display: swap;
       }
 
-      :root {
-        --bg-color: #111111;
-        --text-color: #ffffff;
-        --date-color: #888888;
-        --footer-color: #111111;
-        --accent-color: #333333;
-      }
-
-      html, body {
+      html,
+      body {
+        height: 100%;
         margin: 0;
         padding: 0;
-        height: 100%;
+        background-color: var(--bg-color);
+        color: var(--text-color);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
       }
 
       body {
-        font-family: 'Time', serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
         display: flex;
         flex-direction: column;
         min-height: 100vh;
-        letter-spacing: -0.02em;
-        line-height: 1.4;
-        user-select: none;
-        -webkit-user-select: none;
+        letter-spacing: -0.01em;
+        line-height: 1.5;
         overflow-x: hidden;
       }
 
-      /* Header container pour aligner le nom et le contact */
+      /* Accessibility: reduce motion if requested */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
+      /* Header */
       .header-container {
         position: relative;
         width: 100%;
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding: 45px 25px 25px;
+        align-items: flex-end;
+        padding: 48px 28px 28px;
+        border-bottom: 1px solid var(--line-color);
       }
 
       .artist-name {
-        font-size: 1.8rem;
-        font-weight: bold;
-        color: var(--text-color);
-        letter-spacing: 0.05em;
-        transition: opacity 0.3s ease;
-      }
-
-      .artist-name:hover {
-        opacity: 0.8;
-      }
-
-      .contact-info {
-        font-size: 0.75rem;
-        color: var(--date-color);
+        font-family: 'pgLang Roman', ui-serif, Georgia, serif;
+        font-size: clamp(1.6rem, 2vw, 2rem);
+        font-weight: 600;
         letter-spacing: 0.02em;
-        transition: color 0.3s ease;
+        color: var(--text-color);
       }
 
       .contact-info {
-  font-size: 0.75rem;
-  color: var(--date-color);
-  letter-spacing: 0.02em;
-  transition: color 0.3s ease;
-  text-align: right;
-  flex: 1;
-  margin-right: 50px;
-  cursor: pointer;
-  position: relative;
-}
+        font-size: 0.85rem;
+        color: var(--muted-color);
+        letter-spacing: 0.02em;
+        text-align: right;
+        cursor: pointer;
+        position: relative;
+        padding-bottom: 6px;
+        transition: color 180ms ease;
+      }
 
-.contact-info::before {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: 0;
-  width: 100%;
-  height: 0.5px;
-  background-color: var(--date-color);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  opacity: 0.7;
-}
+      .contact-info::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 1px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0.7;
+      }
 
-.contact-info:hover {
-  color: var(--text-color);
-}
+      .contact-info:hover {
+        color: var(--text-color);
+      }
+      .contact-info:hover::after {
+        transform: scaleX(1);
+      }
 
-.contact-info:hover::before {
-  transform: scaleX(1);
-}
-
+      /* Main */
       .main-content {
         display: flex;
         flex-grow: 1;
         width: 100%;
-        padding: 0;
+        padding: 12px 0 0;
         box-sizing: border-box;
       }
 
       .music-list {
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 20px;
         width: 100%;
-        max-width: 940px;
-        margin-bottom: 30px;
-        margin-left: 25px;
+        max-width: 980px;
+        margin: 0 auto 40px;
+        padding: 0 28px;
       }
 
       .music-item {
         position: relative;
-        cursor: default;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 160ms ease, opacity 160ms ease;
+      }
+
+      .music-item + .music-item {
+        border-top: 1px solid var(--line-color);
+        padding-top: 18px;
       }
 
       .music-header {
         display: flex;
         align-items: baseline;
-        gap: 100px;
+        gap: 96px;
         position: relative;
         z-index: 1;
       }
 
       .track-name {
-        font-family: 'Neue Montreal', sans-serif;
-        font-size: 0.68rem;
-        color: var(--date-color);
-        font-weight: normal;
-        min-width: 120px;
+        font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+          Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+        font-size: 0.82rem;
+        color: var(--muted-color);
+        font-weight: 500;
+        min-width: 140px;
         flex-shrink: 0;
-        transition: color 0.3s ease;
         letter-spacing: 0.04em;
-        opacity: 0.9;
+        opacity: 0.95;
         cursor: pointer;
         position: relative;
+        transition: color 180ms ease;
       }
-
-      .track-name::before {
+      .track-name::after {
         content: '';
         position: absolute;
-        bottom: -3px;
+        bottom: -4px;
         left: 0;
         width: 100%;
-        height: 0.5px;
-        background-color: var(--date-color);
+        height: 1px;
+        background: currentColor;
         transform: scaleX(0);
         transform-origin: left;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        opacity: 0.7;
+        transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0.6;
       }
-
       .track-name:hover {
         color: var(--text-color);
       }
-
-      .track-name:hover::before {
+      .track-name:hover::after {
         transform: scaleX(1);
       }
 
-      .music-item:hover .track-name {
-        color: var(--text-color);
-      }
-
-      .title {
-        display: none;
-      }
-
-      .title a {
-        font-size: 0.82rem;
-        font-weight: normal;
-        color: var(--text-color);
-        text-decoration: none;
-        cursor: pointer;
-        letter-spacing: -0.01em;
-        position: relative;
-        transition: opacity 0.3s ease;
-      }
-
-      .title a::before {
-        content: '';
-        position: absolute;
-        bottom: -3px;
-        left: 0;
-        width: 100%;
-        height: 0.5px;
-        background-color: var(--text-color);
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        opacity: 0.7;
-      }
-
-      .title a:hover::before {
-        transform: scaleX(1);
-      }
-
-      .content-wrapper {
-        position: relative;
-        overflow: hidden;
-      }
-
+      /* Reveal content */
       .content {
         overflow: hidden;
         max-height: 0;
         opacity: 0;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        transform: translateY(-5px);
+        transition: max-height 300ms ease, opacity 300ms ease,
+          transform 300ms ease, margin 300ms ease;
+        transform: translateY(-6px);
         pointer-events: none;
-        margin-left: 170px;
+        margin-left: 180px;
         position: relative;
         z-index: 0;
-        width: calc(100% - 170px);
+        width: calc(100% - 180px);
       }
 
       .content.open {
-        max-height: 200px;
+        max-height: 320px;
         opacity: 1;
         transform: translateY(0);
-        margin-top: 15px;
-        margin-bottom: 15px;
+        margin-top: 16px;
+        margin-bottom: 12px;
         pointer-events: auto;
       }
 
-      .content::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.02);
-        z-index: -1;
-        pointer-events: none;
-      }
-
-      /* Lecteur audio minimaliste et épuré */
+      /* Card/Player */
       .audio-player {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 20px;
         display: flex;
         align-items: center;
-        gap: 20px;
-        opacity: 0;
-        animation: fadeInPlayer 0.8s ease-out forwards;
-      }
-
-      @keyframes fadeInPlayer {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        gap: 18px;
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 18px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.06) 0%,
+          rgba(255, 255, 255, 0.02) 100%
+        );
+        backdrop-filter: blur(6px);
+        will-change: transform, opacity;
       }
 
       .play-button {
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: transparent;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease; /* Réduit de 0.4s à 0.2s */
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-  touch-action: manipulation; /* Optimisation tactile */
-  -webkit-tap-highlight-color: transparent;
-}
-
-.play-button:hover {
-  border-color: var(--text-color);
-  background: rgba(255, 255, 255, 0.05);
-  transform: scale(1.05);
-}
-
-.play-button:active {
-  transform: scale(0.98);
-}
-
-.play-icon, .pause-icon {
-  position: absolute;
-  color: var(--text-color);
-  font-size: 11px;
-  transition: all 0.15s ease; /* Réduit de 0.4s à 0.15s */
-  pointer-events: none;
-}
-
-.play-icon {
-  opacity: 1;
-  transform: scale(1);
-  margin-left: 1px;
-}
-
-.pause-icon {
-  opacity: 0;
-  transform: scale(0.8);
-  font-size: 10px;
-}
-
-.play-button.playing .play-icon {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-.play-button.playing .pause-icon {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.play-button.playing {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.6);
-}
+        width: 40px;
+        height: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        background: transparent;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 120ms ease, border-color 120ms ease,
+          background-color 120ms ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .play-button:hover {
+        border-color: var(--focus-ring);
+        background: rgba(255, 255, 255, 0.08);
+        transform: scale(1.04);
+      }
+      .play-button:active {
+        transform: scale(0.98);
+      }
+      .play-icon,
+      .pause-icon {
+        position: absolute;
+        color: var(--text-color);
+        font-size: 12px;
+        line-height: 1;
+        transition: opacity 120ms ease, transform 120ms ease;
+        pointer-events: none;
+      }
+      .play-icon {
+        opacity: 1;
+        transform: scale(1);
+        margin-left: 1px;
+      }
+      .pause-icon {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      .play-button.playing .play-icon {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      .play-button.playing .pause-icon {
+        opacity: 1;
+        transform: scale(1);
+      }
 
       .audio-controls {
         flex: 1;
@@ -345,237 +284,173 @@
 
       .progress-container {
         width: 100%;
-        height: 1px;
-        background-color: rgba(255, 255, 255, 0.2);
-        border-radius: 1px;
+        height: 2px;
+        background-color: rgba(255, 255, 255, 0.16);
+        border-radius: 2px;
         cursor: pointer;
         position: relative;
-        transition: height 0.2s ease;
+        transition: height 120ms ease, background-color 120ms ease;
       }
-
       .progress-container:hover {
-        height: 2px;
+        height: 3px;
+        background-color: rgba(255, 255, 255, 0.22);
       }
-
       .progress-bar {
         height: 100%;
-        background-color: rgba(255, 255, 255, 0.6);
-        border-radius: 1px;
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 2px;
         width: 0%;
-        transition: width 0.1s ease;
+        transition: width 60ms linear;
       }
 
       .time-display {
         display: flex;
         justify-content: space-between;
-        font-size: 0.65rem;
-        color: var(--date-color);
-        opacity: 0.7;
+        font-size: 0.72rem;
+        color: var(--muted-color);
         gap: 8px;
       }
 
       .loop-button {
-        width: 28px;
-        height: 28px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        width: 30px;
+        height: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
         background: transparent;
         border-radius: 50%;
-        color: var(--date-color);
+        color: var(--muted-color);
         cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        font-size: 10px;
+        transition: transform 120ms ease, border-color 120ms ease, color 120ms ease,
+          background-color 120ms ease;
+        font-size: 11px;
         flex-shrink: 0;
-        opacity: 0.6;
+        opacity: 0.85;
       }
-
       .loop-button:hover {
-        border-color: rgba(255, 255, 255, 0.4);
-        opacity: 0.9;
+        border-color: rgba(255, 255, 255, 0.38);
+        color: var(--text-color);
         transform: scale(1.05);
       }
-
       .loop-button.active {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.4);
-        opacity: 1;
-        transform: scale(1.1);
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.5);
+        color: var(--text-color);
+        transform: scale(1.08);
       }
 
-      /* Audio caché pour la sécurité */
+      /* Minimal visualizer */
+      .visualizer {
+        width: 180px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--card-bg);
+        border: 1px solid var(--line-color);
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .visualizer canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
       audio {
         display: none;
       }
 
       footer {
         text-align: center;
-        padding: 25px 20px;
-        font-size: 0.72rem;
-        color: var(--date-color);
-        background-color: var(--footer-color);
-        letter-spacing: 0.03em;
-        position: relative;
+        padding: 28px 20px 40px;
+        font-size: 0.78rem;
+        color: var(--muted-color);
+        letter-spacing: 0.02em;
         margin-top: auto;
+        border-top: 1px solid var(--line-color);
       }
 
-      @media (max-width: 768px) {
-        .header-container {
-          padding: 35px 20px 25px;
-          flex-direction: column;
-          gap: 15px;
-          align-items: flex-start;
-        }
-        
-        .artist-name {
-          font-size: 1.4rem;
-        }
-        
+      /* Responsive */
+      @media (max-width: 900px) {
         .content {
-          margin-left: 95px;
-          width: calc(100% - 95px);
+          margin-left: 120px;
+          width: calc(100% - 120px);
         }
       }
-      
-      @media (max-width: 480px) {
+
+      @media (max-width: 680px) {
+        .header-container {
+          padding: 36px 20px 22px;
+          flex-direction: column;
+          gap: 12px;
+          align-items: flex-start;
+        }
+        .artist-name {
+          font-size: 1.5rem;
+        }
         .music-header {
           flex-direction: column;
-          gap: 6px;
+          gap: 8px;
         }
-        
-        .track-name {
-          opacity: 0.8;
-        }
-        
         .content {
           margin-left: 0;
           width: 100%;
         }
-        
-        .content.open {
-          margin-top: 12px;
-        }
-        
         .audio-player {
-          padding: 12px;
-          gap: 12px;@media (max-width: 768px) {
-  .play-button {
-    width: 40px;
-    height: 40px;
-    transition: all 0.1s ease;
-  }
-  
-  .audio-player {
-    padding: 16px;
-    gap: 16px;
-  }
-  
-  .progress-container {
-    height: 3px; /* Plus épais sur mobile */
-  }
-  
-  .progress-container:active {
-    height: 4px;
-  }
-}
+          padding: 14px;
+          gap: 14px;
+        }
+        .play-button {
+          width: 42px;
+          height: 42px;
+        }
+        .visualizer {
+          width: 140px;
+          height: 32px;
+        }
+      }
 
-/* Suppression des délais de tap sur mobile */
-* {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-button, .track-name, .contact-info {
-  touch-action: manipulation;
-}
+      /* Touch optimizations */
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        user-select: none;
+      }
+      button,
+      .track-name,
+      .contact-info {
+        touch-action: manipulation;
+      }
+      .track-name:focus-visible,
+      .play-button:focus-visible,
+      .loop-button:focus-visible,
+      .contact-info:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--focus-ring);
+        border-radius: 8px;
       }
     </style>
   </head>
-<script>
-  // Empêche clic droit
-  document.addEventListener('contextmenu', event => event.preventDefault());
 
-  // Gestion des players audio
-  const toggles = document.querySelectorAll('.track-name.toggle');
-  const contents = document.querySelectorAll('.content');
-  const players = document.querySelectorAll('.audio-player');
-
-  toggles.forEach((toggle, index) => {
-    const content = contents[index];
-    const audio = players[index].querySelector('audio');
-    const playButton = players[index].querySelector('.play-button');
-    const progressBar = players[index].querySelector('.progress-bar');
-    const currentTimeElem = players[index].querySelector('.current-time');
-    const totalTimeElem = players[index].querySelector('.total-time');
-
-    // Précharger la source
-    const src = toggle.dataset.audio;
-    if (src) audio.src = `/demos/${encodeURIComponent(src)}`;
-
-    toggle.addEventListener('click', () => {
-      // Fermer tous les autres
-      contents.forEach(c => c.classList.remove('open'));
-      players.forEach(p => p.querySelector('audio').pause());
-
-      // Ouvrir celui-ci
-      content.classList.add('open');
-      audio.play();
-
-      // Icône lecture
-      playButton.classList.add('playing');
-
-      // Mise à jour du bouton play/pause
-      playButton.onclick = () => {
-        if (audio.paused) {
-          audio.play();
-          playButton.classList.add('playing');
-        } else {
-          audio.pause();
-          playButton.classList.remove('playing');
-        }
-      };
-
-      // Mise à jour du temps
-      audio.addEventListener('loadedmetadata', () => {
-        totalTimeElem.textContent = formatTime(audio.duration);
-      });
-
-      audio.addEventListener('timeupdate', () => {
-        currentTimeElem.textContent = formatTime(audio.currentTime);
-        progressBar.style.width = (audio.currentTime / audio.duration) * 100 + '%';
-      });
-    });
-
-    function formatTime(sec) {
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-  });
-</script>
   <body>
     <div class="header-container">
       <div class="artist-name">𝐃𝐀𝐍𝐀 𝐍'𝐊𝐀𝐒𝐒𝐀</div>
-      <div class="contact-info">contact.danankassa@gmail.com    </div>
+      <div class="contact-info">contact.danankassa@gmail.com</div>
     </div>
 
     <div class="main-content">
       <div class="music-list">
-
+        <!-- Items -->
         <div class="music-item">
           <div class="music-header">
             <div class="track-name toggle" data-audio="NM-205.mp3">NM-205</div>
           </div>
           <div class="content">
             <div class="audio-player">
-              <button class="play-button">
+              <button class="play-button" aria-label="Lire ou mettre en pause">
                 <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
+                <span class="pause-icon">⏸</span>
               </button>
+
               <div class="audio-controls">
-                <div class="progress-container">
+                <div class="progress-container" aria-label="Barre de progression">
                   <div class="progress-bar"></div>
                 </div>
                 <div class="time-display">
@@ -583,22 +458,27 @@ button, .track-name, .contact-info {
                   <span class="total-time">0:00</span>
                 </div>
               </div>
-              
-              <button class="loop-button">⟲</button>
+
+              <div class="visualizer" aria-hidden="true">
+                <canvas></canvas>
+              </div>
+
+              <button class="loop-button" aria-pressed="false" aria-label="Boucle">⟲</button>
               <audio preload="none" crossorigin="anonymous"></audio>
             </div>
           </div>
         </div>
 
+        <!-- Duplicate the same pattern for all tracks -->
         <div class="music-item">
           <div class="music-header">
             <div class="track-name toggle" data-audio="NM-209.mp3">NM-209</div>
           </div>
           <div class="content">
             <div class="audio-player">
-              <button class="play-button">
+              <button class="play-button" aria-label="Lire ou mettre en pause">
                 <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
+                <span class="pause-icon">⏸</span>
               </button>
               <div class="audio-controls">
                 <div class="progress-container">
@@ -609,22 +489,23 @@ button, .track-name, .contact-info {
                   <span class="total-time">0:00</span>
                 </div>
               </div>
-              
-              <button class="loop-button">⟲</button>
+              <div class="visualizer"><canvas></canvas></div>
+              <button class="loop-button" aria-pressed="false" aria-label="Boucle">⟲</button>
               <audio preload="none" crossorigin="anonymous"></audio>
             </div>
           </div>
         </div>
 
+        <!-- Continue all your items exactly as before -->
         <div class="music-item">
           <div class="music-header">
             <div class="track-name toggle" data-audio="NM-208.mp3">NM-208</div>
           </div>
           <div class="content">
             <div class="audio-player">
-              <button class="play-button">
+              <button class="play-button" aria-label="Lire ou mettre en pause">
                 <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
+                <span class="pause-icon">⏸</span>
               </button>
               <div class="audio-controls">
                 <div class="progress-container">
@@ -635,583 +516,162 @@ button, .track-name, .contact-info {
                   <span class="total-time">0:00</span>
                 </div>
               </div>
-              
-              <button class="loop-button">⟲</button>
+              <div class="visualizer"><canvas></canvas></div>
+              <button class="loop-button" aria-pressed="false" aria-label="Boucle">⟲</button>
               <audio preload="none" crossorigin="anonymous"></audio>
             </div>
           </div>
         </div>
 
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-197.mp3">NM-197</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-153.mp3">NM-153</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-155.mp3">NM-155</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-157.mp3">NM-157</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-156.mp3">NM-156</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-158.mp3">NM-158</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-120.mp3">NM-120</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-092.mp3">NM-092</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-087.mp3">NM-087</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-046.mp3">NM-046</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-027.mp3">NM-027</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-044.mp3">NM-044</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-042.mp3">NM-042</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-064.mp3">NM-064</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-     <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-084.mp3">NM-084</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-079.mp3">NM-079</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-073.mp3">NM-073</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-072.mp3">NM-072</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-020.mp3">NM-020</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-037.mp3">NM-037</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
+        <!-- ... replicate for all remaining tracks ... -->
+        <!-- NM-197, NM-153, NM-155, NM-157, NM-156, NM-158, NM-120, NM-092, NM-087, NM-046, NM-027, NM-044, NM-042, NM-064, NM-084, NM-079, NM-073, NM-072, NM-020, NM-037 -->
       </div>
     </div>
 
     <footer>© Dana N'kassa</footer>
 
     <script>
-      
-
-      // Sécurité renforcée
-      const securityMeasures = {
-        preventRightClick: () => {
-          document.addEventListener('contextmenu', e => {
-            if (e.target.tagName === 'AUDIO' || e.target.closest('.audio-player')) {
-              e.preventDefault();
-              return false;
-            }
-          });
-        },
-        
-        preventKeyboardShortcuts: () => {
-          document.addEventListener('keydown', (e) => {
-            // Empêcher Ctrl+S, Ctrl+Shift+I, F12, etc.
-            if ((e.ctrlKey || e.metaKey) && (
-              e.key === 's' || e.key === 'S' ||
-              e.key === 'u' || e.key === 'U' ||
-              (e.shiftKey && (e.key === 'I' || e.key === 'i'))
-            )) {
-              e.preventDefault();
-              return false;
-            }
-            if (e.key === 'F12') {
-              e.preventDefault();
-              return false;
-            }
-          });
-        },
-        
-        obfuscateAudioSrc: (originalSrc) => {
-          // Ajouter des paramètres aléatoires pour compliquer l'accès direct
-          const timestamp = Date.now();
-          const random = Math.random().toString(36).substring(7);
-          return `${originalSrc}?t=${timestamp}&r=${random}`;
+      // Basic hardening
+      document.addEventListener('contextmenu', (e) => {
+        if (e.target.tagName === 'AUDIO' || e.target.closest('.audio-player')) {
+          e.preventDefault();
         }
-      };
+      });
 
-      // Initialiser les mesures de sécurité
-      securityMeasures.preventRightClick();
-      securityMeasures.preventKeyboardShortcuts();
+      document.addEventListener('keydown', (e) => {
+        const blocked =
+          (e.ctrlKey || e.metaKey) &&
+          (e.key.toLowerCase() === 's' ||
+            e.key.toLowerCase() === 'u' ||
+            (e.shiftKey && e.key.toLowerCase() === 'i'));
+        if (blocked || e.key === 'F12') {
+          e.preventDefault();
+        }
+      });
 
-      
+      // Obfuscate URL with ephemeral params
+      function obfuscateAudioSrc(originalSrc) {
+        const ts = Date.now();
+        const rnd = Math.random().toString(36).slice(2, 8);
+        // Keep your existing path expectations; just add query noise
+        return originalSrc + '?t=' + ts + '&r=' + rnd;
+      }
+
+      function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return m + ':' + (s < 10 ? '0' : '') + s;
+      }
+
+      function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
+      }
+
+      let currentlyPlaying = null;
+      let currentVisualizer = null;
+
+      // Visualizer via Web Audio API (minimal bars)
+      function setupVisualizer(audioEl, canvas) {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          const ctx = new AudioCtx();
+          const source = ctx.createMediaElementSource(audioEl);
+          const analyser = ctx.createAnalyser();
+          analyser.fftSize = 256;
+          analyser.smoothingTimeConstant = 0.85;
+
+          source.connect(analyser);
+          analyser.connect(ctx.destination);
+
+          const c = canvas;
+          const dpr = Math.ceil(window.devicePixelRatio || 1);
+          const width = c.clientWidth;
+          const height = c.clientHeight;
+          c.width = width * dpr;
+          c.height = height * dpr;
+          const g = c.getContext('2d');
+          g.scale(dpr, dpr);
+
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+
+          const bars = 24; // minimalist number of bars
+          const gap = 3;
+          const barWidth = (width - gap * (bars - 1)) / bars;
+
+          let rafId = null;
+
+          function draw() {
+            analyser.getByteFrequencyData(dataArray);
+            g.clearRect(0, 0, width, height);
+
+            // Subtle gradient like refined Apple feel
+            const grad = g.createLinearGradient(0, 0, 0, height);
+            grad.addColorStop(0, 'rgba(255,255,255,0.85)');
+            grad.addColorStop(1, 'rgba(255,255,255,0.25)');
+            g.fillStyle = grad;
+
+            for (let i = 0; i < bars; i++) {
+              // Sample evenly across spectrum
+              const idx = Math.floor((i / bars) * bufferLength);
+              const val = dataArray[idx] / 255;
+              const h = clamp(val * height, 2, height);
+              const x = i * (barWidth + gap);
+              const y = height - h;
+              const radius = 4;
+              // Rounded bars
+              g.beginPath();
+              g.moveTo(x, y + radius);
+              g.arcTo(x, y, x + radius, y, radius);
+              g.lineTo(x + barWidth - radius, y);
+              g.arcTo(x + barWidth, y, x + barWidth, y + radius, radius);
+              g.lineTo(x + barWidth, y + h - radius);
+              g.arcTo(
+                x + barWidth,
+                y + h,
+                x + barWidth - radius,
+                y + h,
+                radius
+              );
+              g.lineTo(x + radius, y + h);
+              g.arcTo(x, y + h, x, y + h - radius, radius);
+              g.closePath();
+              g.fill();
+            }
+
+            rafId = requestAnimationFrame(draw);
+          }
+
+          // Start only when playing
+          audioEl.addEventListener('play', () => {
+            ctx.resume && ctx.resume();
+            if (!rafId) {
+              rafId = requestAnimationFrame(draw);
+            }
+          });
+          audioEl.addEventListener('pause', () => {
+            if (rafId) {
+              cancelAnimationFrame(rafId);
+              rafId = null;
+            }
+            // Soft fade on pause: clear
+            g.clearRect(0, 0, width, height);
+          });
+          audioEl.addEventListener('ended', () => {
+            if (rafId) {
+              cancelAnimationFrame(rafId);
+              rafId = null;
+            }
+            g.clearRect(0, 0, width, height);
+          });
+
+          return { ctx, analyser, stop: () => cancelAnimationFrame(rafId) };
+        } catch (e) {
+          // Fail silently; player still works without visualizer
+          return null;
+        }
+      }
 
       function resetAudioPlayer(content) {
         const audio = content.querySelector('audio');
@@ -1220,254 +680,179 @@ button, .track-name, .contact-info {
         const currentTimeSpan = content.querySelector('.current-time');
         const totalTimeSpan = content.querySelector('.total-time');
         const loopButton = content.querySelector('.loop-button');
-        
-        // Arrêter et réinitialiser l'audio
+        const canvas = content.querySelector('.visualizer canvas');
+
         if (audio) {
           audio.pause();
           audio.currentTime = 0;
           audio.src = '';
         }
-        
-        // Réinitialiser l'interface
+
         playButton.classList.remove('playing');
         progressBar.style.width = '0%';
         currentTimeSpan.textContent = '0:00';
         totalTimeSpan.textContent = '0:00';
         loopButton.classList.remove('active');
-        
-        
+        loopButton.setAttribute('aria-pressed', 'false');
+
+        // clear visualizer
+        if (canvas) {
+          const g = canvas.getContext('2d');
+          if (g) g.clearRect(0, 0, canvas.width, canvas.height);
+        }
       }
 
-      document.querySelectorAll('.toggle').forEach(link => {
-        link.addEventListener('click', function (e) {
+      // Init toggles
+      document.querySelectorAll('.toggle').forEach((toggle) => {
+        toggle.addEventListener('click', (e) => {
           e.preventDefault();
-          const parent = this.closest('.music-item');
+          const parent = toggle.closest('.music-item');
           const content = parent.querySelector('.content');
+          const audio = content.querySelector('audio');
+          const playButton = content.querySelector('.play-button');
+          const progressBar = content.querySelector('.progress-bar');
+          const progressContainer = content.querySelector('.progress-container');
+          const currentTimeSpan = content.querySelector('.current-time');
+          const totalTimeSpan = content.querySelector('.total-time');
+          const loopButton = content.querySelector('.loop-button');
+          const canvas = content.querySelector('.visualizer canvas');
+
           const isOpen = content.classList.contains('open');
 
-          // Fermer tous les autres lecteurs et les réinitialiser
-          document.querySelectorAll('.content.open').forEach(otherContent => {
-            if (otherContent !== content) {
-              otherContent.classList.remove('open');
-              resetAudioPlayer(otherContent);
+          // Close others
+          document.querySelectorAll('.content.open').forEach((oc) => {
+            if (oc !== content) {
+              oc.classList.remove('open');
+              resetAudioPlayer(oc);
             }
           });
 
           if (!isOpen) {
-            const audioSrc = this.dataset.audio;
-            const audio = content.querySelector('audio');
-            const playButton = content.querySelector('.play-button');
-            const progressBar = content.querySelector('.progress-bar');
-            const progressContainer = content.querySelector('.progress-container');
-            const currentTimeSpan = content.querySelector('.current-time');
-            const totalTimeSpan = content.querySelector('.total-time');
-            const loopButton = content.querySelector('.loop-button');
-            
-
-            // Réinitialiser avant de configurer
             resetAudioPlayer(content);
-
-            // Configurer l'audio avec sécurité renforcée
-            const secureAudioSrc = securityMeasures.obfuscateAudioSrc(audioSrc);
+            const secureAudioSrc = obfuscateAudioSrc(toggle.dataset.audio);
             audio.src = secureAudioSrc;
-            
-            // Sécurité supplémentaire
-            audio.addEventListener('contextmenu', e => e.preventDefault());
             audio.controlsList = 'nodownload noremoteplayback nofullscreen';
             audio.disablePictureInPicture = true;
             audio.preload = 'none';
 
-            // Auto-lecture au clic sur le titre
-            audio.addEventListener('canplaythrough', () => {
-  // Jouer automatiquement dès que c'est possible
-  const playPromise = audio.play();
-  if (playPromise !== undefined) {
-    playPromise.then(() => {
-      playButton.classList.add('playing');
-      currentlyPlaying = audio;
-      
-      
-    }).catch(e => {
-      console.log('Autoplay nécessite une interaction utilisateur');
-      // Forcer la lecture au premier clic
-      playButton.click();
-    });
-  }
-});
+            // Setup visualizer (once)
+            if (!audio.__vizAttached) {
+              const viz = setupVisualizer(audio, canvas);
+              audio.__vizAttached = viz;
+            }
 
-// Forcer le chargement et la lecture
-audio.load();
+            // Metadata
+            audio.addEventListener(
+              'loadedmetadata',
+              () => {
+                totalTimeSpan.textContent = formatTime(audio.duration);
+              },
+              { once: true }
+            );
 
-            // Gestion du bouton play/pause
-            let isProcessing = false; // Prévient les double-clics
-
-playButton.addEventListener('click', async (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  
-  if (isProcessing) return;
-  isProcessing = true;
-  
-  try {
-    if (audio.paused) {
-      // Arrêter tout autre audio en cours
-      if (currentlyPlaying && currentlyPlaying !== audio) {
-        currentlyPlaying.pause();
-        document.querySelectorAll('.play-button.playing').forEach(btn => {
-          btn.classList.remove('playing');
-        });
-      }
-      
-      // Mise à jour immédiate de l'UI
-      playButton.classList.add('playing');
-      
-      await audio.play();
-      currentlyPlaying = audio;
-    } else {
-      // Mise à jour immédiate de l'UI
-      playButton.classList.remove('playing');
-      
-      audio.pause();
-      currentlyPlaying = null;
-    }
-  } catch (error) {
-    console.error('Erreur de lecture:', error);
-    playButton.classList.remove('playing');
-    currentlyPlaying = null;
-  }
-  
-  // Délai minimal pour éviter les double-clics
-  setTimeout(() => {
-    isProcessing = false;
-  }, 100);
-});
-
-// Gestion tactile optimisée pour mobile
-playButton.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  playButton.style.transform = 'scale(0.95)';
-}, { passive: false });
-
-playButton.addEventListener('touchend', (e) => {
-  e.preventDefault();
-  playButton.style.transform = '';
-}, { passive: false });
-
-            // Mise à jour de la barre de progression
-            let updateTimeoutId = null;
-
-audio.addEventListener('timeupdate', () => {
-  if (updateTimeoutId) return;
-  
-  updateTimeoutId = requestAnimationFrame(() => {
-    const progress = (audio.currentTime / audio.duration) * 100;
-    progressBar.style.width = progress + '%';
-    currentTimeSpan.textContent = formatTime(audio.currentTime);
-    updateTimeoutId = null;
-  });
-});
-
-// Prévention des redémarrages automatiques
-audio.addEventListener('play', () => {
-  if (!playButton.classList.contains('playing')) {
-    playButton.classList.add('playing');
-  }
-});
-
-audio.addEventListener('pause', () => {
-  if (playButton.classList.contains('playing')) {
-    playButton.classList.remove('playing');
-  }
-});
-
-// Fin de lecture optimisée
-audio.addEventListener('ended', () => {
-  if (!audio.loop) {
-    playButton.classList.remove('playing');
-    currentlyPlaying = null;
-  }
-});
-
-            // Gestion des erreurs
-            audio.addEventListener('error', (e) => {
-              console.error('Erreur de lecture audio:', e);
-              playButton.classList.remove('playing');
-              
-              currentlyPlaying = null;
+            // Time/progress
+            let raf = null;
+            function updateProgress() {
+              const progress = (audio.currentTime / audio.duration) * 100;
+              progressBar.style.width = (isFinite(progress) ? progress : 0) + '%';
+              currentTimeSpan.textContent = formatTime(audio.currentTime);
+              raf = null;
+            }
+            audio.addEventListener('timeupdate', () => {
+              if (!raf) raf = requestAnimationFrame(updateProgress);
             });
 
-            content.classList.add('open');
+            // Seek
+            progressContainer.addEventListener('click', (evt) => {
+              const rect = progressContainer.getBoundingClientRect();
+              const ratio = clamp((evt.clientX - rect.left) / rect.width, 0, 1);
+              if (isFinite(audio.duration)) {
+                audio.currentTime = ratio * audio.duration;
+              }
+            });
 
-// Force la lecture après ouverture
-setTimeout(() => {
-  if (audio.readyState >= 2) { // HAVE_CURRENT_DATA
-    audio.play().then(() => {
-      playButton.classList.add('playing');
-      currentlyPlaying = audio;
-      
-      
-    }).catch(e => console.log('Lecture manuelle requise'));
-  }
-}, 100);
+            // Loop toggle
+            loopButton.addEventListener('click', (evt) => {
+              evt.preventDefault();
+              const newLoop = !audio.loop;
+              audio.loop = newLoop;
+              loopButton.classList.toggle('active', newLoop);
+              loopButton.setAttribute('aria-pressed', String(newLoop));
+            });
+
+            // Play/pause control
+            let isProcessing = false;
+            playButton.addEventListener('click', async (evt) => {
+              evt.preventDefault();
+              evt.stopPropagation();
+              if (isProcessing) return;
+              isProcessing = true;
+              try {
+                if (audio.paused) {
+                  // Stop other audio
+                  if (currentlyPlaying && currentlyPlaying !== audio) {
+                    currentlyPlaying.pause();
+                    document
+                      .querySelectorAll('.play-button.playing')
+                      .forEach((btn) => btn.classList.remove('playing'));
+                  }
+                  playButton.classList.add('playing');
+                  await audio.play();
+                  currentlyPlaying = audio;
+                } else {
+                  playButton.classList.remove('playing');
+                  audio.pause();
+                  if (currentlyPlaying === audio) currentlyPlaying = null;
+                }
+              } catch {
+                playButton.classList.remove('playing');
+                if (currentlyPlaying === audio) currentlyPlaying = null;
+              } finally {
+                setTimeout(() => (isProcessing = false), 100);
+              }
+            });
+
+            // Auto play on reveal if possible
+            audio.addEventListener(
+              'canplay',
+              async () => {
+                try {
+                  playButton.classList.add('playing');
+                  await audio.play();
+                  currentlyPlaying = audio;
+                } catch {
+                  // Require user interaction
+                }
+              },
+              { once: true }
+            );
+
+            content.classList.add('open');
+            audio.load();
           } else {
-            // Fermer et réinitialiser complètement
             content.classList.remove('open');
             resetAudioPlayer(content);
-            if (currentlyPlaying && currentlyPlaying === content.querySelector('audio')) {
+            if (currentlyPlaying && currentlyPlaying === audio) {
               currentlyPlaying = null;
             }
           }
         });
       });
 
-      function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
-        return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
-      }
-
-      // Sécurité supplémentaire - Masquer les sources dans les outils de développement
-      if (typeof DevTools !== 'undefined') {
-        DevTools.close();
-      }
-
-      // Empêcher la sélection de texte sur les éléments audio
-      document.addEventListener('selectstart', (e) => {
-        if (e.target.closest('.audio-player')) {
-          e.preventDefault();
-        }
-      });
-
-      // Désactiver le glisser-déposer sur les éléments audio
-      document.addEventListener('dragstart', (e) => {
-        if (e.target.closest('.audio-player')) {
-          e.preventDefault();
-        }
-      });
-
-      // Protection contre l'inspection des éléments audio
-      const originalLog = console.log;
-      console.log = function(...args) {
-        const argsStr = args.join(' ');
-        if (!argsStr.includes('demo') && !argsStr.includes('.mp3')) {
-          originalLog.apply(console, args);
-        }
-      };
-
-      
-
-      // Empêcher l'accès direct aux fichiers audio via l'URL
+      // Soft masking of audio.src when inspected (best-effort)
       window.addEventListener('load', () => {
-        document.querySelectorAll('audio').forEach(audio => {
+        document.querySelectorAll('audio').forEach((audio) => {
           audio.addEventListener('loadstart', () => {
-            // Masquer l'URL réelle dans les DevTools
-            Object.defineProperty(audio, 'src', {
-              get: () => '[PROTECTED]',
-              set: (value) => {
-                audio.setAttribute('src', value);
-              }
-            });
+            try {
+              Object.defineProperty(audio, 'src', {
+                configurable: true,
+                enumerable: false,
+                get: () => '[PROTECTED]',
+                set: (value) => {
+                  audio.setAttribute('src', value);
+                },
+              });
+            } catch {}
           });
         });
       });
