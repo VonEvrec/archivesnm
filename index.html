@@ -326,29 +326,24 @@
 
       <section class="list" id="music">
         <!-- Use your actual available files; this version gracefully disables missing ones -->
-        <div class="item">
-          <div class="row">
-            <div class="track" data-audio="NM-205.mp3">NM-205</div>
-            <span class="status"></span>
-          </div>
-          <div class="player">
-            <button class="btn play">
-              <div class="icons"><span class="icon-play">▶</span><span class="icon-pause">◌</span></div>
-            </button>
-            <div class="controls">
-              <div class="bar"><div class="fill"></div></div>
-              <div class="time"><span class="current">0:00</span><span class="total">0:00</span></div>
-            </div>
-            <button class="loop">⟲</button>
-            <audio preload="none" crossorigin="anonymous"></audio>
-          </div>
-        </div>
+         </style>
+  </head>
+  <body>
+    <div class="visualizer-wrap" aria-hidden="true">
+      <canvas id="gl"></canvas>
+      <div class="visualizer-gradient"></div>
+    </div>
 
+    <header class="header">
+      <div class="brand">DANA N'KASSA</div>
+      <div class="contact">contact.danankassa@gmail.com</div>
+    </header>
+
+    <main class="main">
+      <p class="intro">Choose a track to play.</p>
+      <section class="list" id="music">
         <div class="item">
-          <div class="row">
-            <div class="track" data-audio="NM-209.mp3">NM-209</div>
-            <span class="status"></span>
-          </div>
+          <div class="row"><div class="track" data-audio="NM-205.mp3">NM-205</div></div>
           <div class="player">
             <button class="btn play"><div class="icons"><span class="icon-play">▶</span><span class="icon-pause">◌</span></div></button>
             <div class="controls"><div class="bar"><div class="fill"></div></div><div class="time"><span class="current">0:00</span><span class="total">0:00</span></div></div>
@@ -356,11 +351,10 @@
             <audio preload="none" crossorigin="anonymous"></audio>
           </div>
         </div>
-
         <div class="item">
-          <div class="row">
-            <div class="track" data-audio="NM-208.mp3">NM-208</div>
-            <span class="status"></span>
+          <div class="row"><div class="track" data-audio="NM-209.mp3">NM-209</div></div>
+          <div class="player">
+            <button class="btn
           </div>
           <div class="player">
             <button class="btn play"><div class="icons"><span class="icon-play">▶</span><span class="icon-pause">◌</span></div></button>
