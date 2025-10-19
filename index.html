@@ -12,8 +12,6 @@
     }
 
     :root {
-      --glass-bg: rgba(255, 255, 255, 0.08);
-      --glass-border: rgba(255, 255, 255, 0.12);
       --text-primary: #f5f5f7;
       --text-secondary: #86868b;
       --accent: #007aff;
@@ -44,30 +42,32 @@
       width: 100%;
       height: 100%;
       opacity: 0;
-      filter: blur(120px) saturate(200%);
+      filter: blur(140px) saturate(220%) brightness(1.2);
       mix-blend-mode: screen;
-      animation: vizEntry 2.5s cubic-bezier(0.28, 0, 0.21, 1) 0.8s forwards;
+      animation: vizEntry 2.8s cubic-bezier(0.28, 0, 0.21, 1) 0.8s forwards;
     }
 
-    @keyframes vizEntry { to { opacity: 0.45; } }
+    @keyframes vizEntry { to { opacity: 0.5; } }
 
     .glass-ambient {
       position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 50% 50%, 
-        rgba(0, 122, 255, 0.12), 
-        rgba(88, 86, 214, 0.08) 40%, 
-        transparent 70%);
-      filter: blur(100px);
-      animation: pulse 8s ease-in-out infinite;
+      inset: -10%;
+      background: radial-gradient(circle at 50% 40%, 
+        rgba(0, 122, 255, 0.15), 
+        rgba(88, 86, 214, 0.12) 35%, 
+        rgba(255, 55, 95, 0.08) 60%,
+        transparent 75%);
+      filter: blur(120px);
+      animation: ambientFlow 12s ease-in-out infinite;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.6; transform: scale(1); }
-      50% { opacity: 0.85; transform: scale(1.05); }
+    @keyframes ambientFlow {
+      0%, 100% { opacity: 0.7; transform: translate(0, 0) scale(1); }
+      33% { opacity: 0.9; transform: translate(2%, -3%) scale(1.08); }
+      66% { opacity: 0.8; transform: translate(-2%, 3%) scale(1.05); }
     }
 
-    /* === Header === */
+    /* === Liquid Glass Header === */
     header {
       position: relative;
       z-index: 100;
@@ -75,9 +75,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      backdrop-filter: blur(60px) saturate(180%);
-      background: rgba(0, 0, 0, 0.72);
-      border-bottom: 0.5px solid var(--glass-border);
+      backdrop-filter: blur(80px) saturate(200%) brightness(1.15);
+      background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.08) 50%,
+        rgba(255, 255, 255, 0.06) 100%);
+      border-bottom: 0.5px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.2);
       animation: slideDown 1.2s cubic-bezier(0.28, 0, 0.21, 1) 0.4s backwards;
     }
 
@@ -87,19 +92,24 @@
       font-size: 2.125rem;
       font-weight: 700;
       letter-spacing: -0.05em;
-      background: linear-gradient(180deg, #f5f5f7, #86868b);
+      background: linear-gradient(135deg, #f5f5f7, #007aff, #5856d6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 8px rgba(0, 122, 255, 0.3));
     }
 
     .contact {
       font-size: 0.9375rem;
       color: var(--accent);
       text-decoration: none;
-      transition: opacity 0.3s;
+      transition: all 0.3s cubic-bezier(0.28, 0, 0.21, 1);
+      filter: drop-shadow(0 1px 4px rgba(0, 122, 255, 0.2));
     }
 
-    .contact:hover { opacity: 0.7; }
+    .contact:hover { 
+      opacity: 0.7; 
+      filter: drop-shadow(0 2px 8px rgba(0, 122, 255, 0.4));
+    }
 
     /* === Main === */
     main {
@@ -114,33 +124,70 @@
     .track-grid {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
 
     .card {
-      backdrop-filter: blur(60px) saturate(180%);
-      background: var(--glass-bg);
-      border: 0.5px solid var(--glass-border);
-      border-radius: 20px;
+      backdrop-filter: blur(80px) saturate(200%) brightness(1.15);
+      background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.08) 50%,
+        rgba(255, 255, 255, 0.06) 100%);
+      border: 0.5px solid rgba(255, 255, 255, 0.18);
+      border-radius: 24px;
       overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                  inset 0 -1px 0 rgba(0, 0, 0, 0.1);
       transition: all 0.5s cubic-bezier(0.28, 0, 0.21, 1);
       animation: cardEntry 1s cubic-bezier(0.28, 0, 0.21, 1) calc(0.6s + var(--delay) * 0.05s) backwards;
+      position: relative;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.2) 0%,
+        transparent 40%,
+        transparent 60%,
+        rgba(255, 255, 255, 0.1) 100%);
+      border-radius: 24px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+
+    .card:hover::before {
+      opacity: 1;
     }
 
     @keyframes cardEntry {
-      from { opacity: 0; transform: translateY(30px) scale(0.98); }
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
     }
 
     .card:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.18);
-      transform: translateY(-4px) scale(1.01);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.16) 0%,
+        rgba(255, 255, 255, 0.12) 50%,
+        rgba(255, 255, 255, 0.1) 100%);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                  0 0 40px rgba(0, 122, 255, 0.15);
     }
 
     .card.playing {
-      background: rgba(0, 122, 255, 0.15);
-      border-color: rgba(0, 122, 255, 0.4);
+      background: linear-gradient(135deg, 
+        rgba(0, 122, 255, 0.22) 0%,
+        rgba(0, 122, 255, 0.16) 50%,
+        rgba(88, 86, 214, 0.12) 100%);
+      border-color: rgba(0, 122, 255, 0.5);
+      box-shadow: 0 12px 48px rgba(0, 122, 255, 0.4),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                  0 0 60px rgba(0, 122, 255, 0.3);
     }
 
     .header {
@@ -150,16 +197,37 @@
       justify-content: space-between;
       align-items: center;
       user-select: none;
+      position: relative;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 100%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .card:hover .header::after {
+      opacity: 1;
     }
 
     .title {
       font-size: 1.375rem;
       font-weight: 600;
       letter-spacing: -0.03em;
-      transition: color 0.3s;
+      transition: all 0.3s;
+      filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
     }
 
-    .header:hover .title { color: var(--accent); }
+    .header:hover .title { 
+      color: var(--accent);
+      filter: drop-shadow(0 2px 6px rgba(0, 122, 255, 0.4));
+    }
 
     .indicator {
       width: 8px;
@@ -167,22 +235,25 @@
       border-radius: 50%;
       background: var(--text-secondary);
       opacity: 0.5;
-      transition: all 0.4s;
+      transition: all 0.4s cubic-bezier(0.28, 0, 0.21, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     .card.playing .indicator {
       background: var(--accent);
-      box-shadow: 0 0 20px rgba(0, 122, 255, 0.8);
+      box-shadow: 0 0 24px rgba(0, 122, 255, 0.9),
+                  0 0 12px rgba(0, 122, 255, 0.6),
+                  0 2px 8px rgba(0, 0, 0, 0.2);
       opacity: 1;
       animation: glow 2s ease-in-out infinite;
     }
 
     @keyframes glow {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.4); opacity: 0.7; }
+      50% { transform: scale(1.5); opacity: 0.8; }
     }
 
-    /* === Player === */
+    /* === Liquid Glass Player === */
     .player-wrap {
       max-height: 0;
       overflow: hidden;
@@ -197,35 +268,73 @@
     }
 
     .player {
-      backdrop-filter: blur(80px) saturate(200%);
-      background: rgba(0, 0, 0, 0.5);
-      border: 0.5px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
+      backdrop-filter: blur(100px) saturate(220%) brightness(1.2);
+      background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.6) 0%,
+        rgba(0, 0, 0, 0.5) 50%,
+        rgba(0, 0, 0, 0.55) 100%);
+      border: 0.5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 18px;
       padding: 28px;
       display: flex;
       align-items: center;
       gap: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .player::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, 
+        rgba(255, 255, 255, 0.08) 0%,
+        transparent 60%);
+      border-radius: 18px;
+      pointer-events: none;
     }
 
     .play-btn {
       width: 52px;
       height: 52px;
       border: none;
-      background: linear-gradient(135deg, #007aff, #0051d5);
+      background: linear-gradient(135deg, #007aff 0%, #0051d5 100%);
       border-radius: 50%;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 122, 255, 0.5),
+                  0 4px 12px rgba(0, 122, 255, 0.3),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.3);
       transition: all 0.25s cubic-bezier(0.28, 0, 0.21, 1);
       position: relative;
     }
 
+    .play-btn::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: radial-gradient(circle, 
+        rgba(0, 122, 255, 0.3) 0%,
+        transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .play-btn:hover::after {
+      opacity: 1;
+    }
+
     .play-btn:hover {
-      transform: scale(1.08);
-      box-shadow: 0 12px 32px rgba(0, 122, 255, 0.6);
+      transform: scale(1.1);
+      box-shadow: 0 12px 36px rgba(0, 122, 255, 0.7),
+                  0 6px 18px rgba(0, 122, 255, 0.4),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.4);
     }
 
     .play-btn:active { transform: scale(0.95); }
@@ -235,6 +344,7 @@
       color: white;
       font-size: 18px;
       transition: all 0.2s;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
 
     .play-icon { opacity: 1; transform: translateX(1px); }
@@ -252,23 +362,25 @@
     .progress {
       width: 100%;
       height: 6px;
-      background: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.15);
       border-radius: 3px;
       cursor: pointer;
       position: relative;
       overflow: hidden;
       transition: height 0.2s;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
     .progress:hover { height: 8px; }
 
     .fill {
       height: 100%;
-      background: linear-gradient(90deg, #007aff, #5856d6);
+      background: linear-gradient(90deg, #007aff 0%, #5856d6 100%);
       border-radius: 3px;
       width: 0%;
       transition: width 0.05s linear;
       position: relative;
+      box-shadow: 0 0 12px rgba(0, 122, 255, 0.6);
     }
 
     .fill::after {
@@ -281,7 +393,9 @@
       height: 16px;
       background: white;
       border-radius: 50%;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4),
+                  0 0 8px rgba(0, 122, 255, 0.6),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.5);
       opacity: 0;
       transition: opacity 0.2s;
     }
@@ -294,13 +408,14 @@
       font-size: 0.8125rem;
       color: var(--text-secondary);
       font-variant-numeric: tabular-nums;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
     }
 
     .loop-btn {
       width: 40px;
       height: 40px;
-      border: 0.5px solid rgba(255, 255, 255, 0.15);
-      background: transparent;
+      border: 0.5px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
       border-radius: 50%;
       color: var(--text-secondary);
       cursor: pointer;
@@ -310,18 +425,26 @@
       flex-shrink: 0;
       font-size: 18px;
       transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     .loop-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
     .loop-btn.active {
-      background: rgba(0, 122, 255, 0.25);
-      border-color: var(--accent);
+      background: linear-gradient(135deg, 
+        rgba(0, 122, 255, 0.35) 0%,
+        rgba(0, 122, 255, 0.25) 100%);
+      border-color: rgba(0, 122, 255, 0.6);
       color: var(--accent);
       transform: rotate(360deg);
+      box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
     footer {
@@ -331,8 +454,12 @@
       padding: 60px 40px;
       font-size: 0.875rem;
       color: var(--text-secondary);
-      border-top: 0.5px solid var(--glass-border);
-      backdrop-filter: blur(40px);
+      border-top: 0.5px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(80px) saturate(200%);
+      background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.06) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
     @media (max-width: 768px) {
@@ -365,13 +492,12 @@
   <script>
     const tracks = ['NM-205','NM-209','NM-208','NM-197','NM-153','NM-155','NM-157','NM-156','NM-158','NM-120','NM-092','NM-087','NM-046','NM-027','NM-044','NM-042','NM-064','NM-084','NM-079','NM-073','NM-072','NM-020','NM-037'];
 
-    // === WebGL Circular Visualizer ===
     const canvas = document.getElementById('glCanvas');
     const gl = canvas.getContext('webgl');
     
     if (gl) {
-      const vs = `attribute vec2 a_pos; void main() { gl_Position = vec4(a_pos, 0.0, 1.0); gl_PointSize = 1.5; }`;
-      const fs = `precision mediump float; uniform vec3 u_col; void main() { gl_FragColor = vec4(u_col, 0.8); }`;
+      const vs = `attribute vec2 a_pos; void main() { gl_Position = vec4(a_pos, 0.0, 1.0); gl_PointSize = 1.2; }`;
+      const fs = `precision mediump float; uniform vec3 u_col; void main() { gl_FragColor = vec4(u_col, 0.85); }`;
       
       const createShader = (type, src) => {
         const s = gl.createShader(type);
@@ -408,7 +534,7 @@
         if (!ctx) {
           ctx = new (window.AudioContext || window.webkitAudioContext)();
           analyser = ctx.createAnalyser();
-          analyser.fftSize = 256;
+          analyser.fftSize = 512;
           bufLen = analyser.frequencyBinCount;
           dataArr = new Uint8Array(bufLen);
         }
@@ -434,21 +560,20 @@
         for (let i = 0; i < numPts; i++) {
           const amp = dataArr[i] / 255;
           const ang = (i / numPts) * Math.PI * 2;
-          const rad = 0.3 + amp * 0.5;
+          const rad = 0.25 + amp * 0.6;
           pos.push(Math.cos(ang) * rad, Math.sin(ang) * rad);
         }
 
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pos), gl.DYNAMIC_DRAW);
 
         const avgFreq = dataArr.reduce((a, b) => a + b, 0) / dataArr.length / 255;
-        gl.uniform3f(colLoc, avgFreq * 0.5 + 0.55, 0.4 + avgFreq * 0.4, 1);
+        gl.uniform3f(colLoc, 0.1 + avgFreq * 0.5, 0.5 + avgFreq * 0.4, 0.9 + avgFreq * 0.1);
 
         gl.drawArrays(gl.LINE_LOOP, 0, numPts);
         requestAnimationFrame(draw);
       };
       draw();
 
-      // === Player ===
       const grid = document.querySelector('.track-grid');
       let activeAudio = null;
 
@@ -463,7 +588,7 @@
           </div>
           <div class="player-wrap">
             <div class="player">
-              <button class="play-btn"><span class="play-icon">▶</span><span class="pause-icon">  </span></button>
+              <button class="play-btn"><span class="play-icon">▶</span><span class="pause-icon">❚❚</span></button>
               <div class="controls">
                 <div class="progress"><div class="fill"></div></div>
                 <div class="time"><span class="curr">0:00</span><span class="total">0:00</span></div>
