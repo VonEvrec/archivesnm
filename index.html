@@ -685,4 +685,158 @@
             if (p !== player) closePlayer(p);
           });
 
-          const src = track.dataset
+          const src = track.dataset.audio;
+          audio.src = obfuscate(src);
+          player.classList.add('open');
+          isOpen = true;
+
+          // Connect analyser
+          connectAudioToAnalyser(audio);
+          currentlyPlayingAudio = audio;
+
+          // Auto play with safety
+          const playAttempt = audio.play();
+          if (playAttempt && typeof playAttempt.then === 'function') {
+            playAttempt.then(() => btn.classList.add('playing'))
+              .catch(() => {/* requires user gesture; wait for button click */});
+          }
+
+          // Metadata for duration
+          audio.addEventListener('loadedmetadata', () => {
+            tot.textContent = fmt(audio.duration);
+          }, { once: true });
+
+          // Progress updates (throttled via rAF)
+          function step() {
+            if (audio.duration && isFinite(audio.duration)) {
+              fill.style.width = ((audio.currentTime / audio.duration) * 100) + '%';
+              cur.textContent = fmt(audio.currentTime);
+            }
+            rafId = requestAnimationFrame(step);
+          }
+          if (!rafId) rafId = requestAnimationFrame(step);
+        }
+
+        function close() {
+          player.classList.remove('open');
+          isOpen = false;
+          try { audio.pause(); } catch {}
+          try { audio.currentTime = 0; } catch {}
+          audio.removeAttribute('src');
+          btn.classList.remove('playing');
+          fill.style.width = '0%';
+          cur.textContent = '0:00';
+          tot.textContent = '0:00';
+          loop.classList.remove('active');
+          if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+          if (currentlyPlayingAudio === audio) { currentlyPlayingAudio = null; }
+        }
+
+        track.addEventListener('click', (e) => {
+          e.preventDefault();
+          isOpen ? close() : open();
+        });
+
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // Pause other audio
+          document.querySelectorAll('audio').forEach(a => {
+            if (a !== audio) { try { a.pause(); } catch {} }
+          });
+          // Ensure analyser is connected to the right audio
+          if (currentlyPlayingAudio !== audio) connectAudioToAnalyser(audio);
+
+          try {
+            if (audio.paused) {
+              await audio.play();
+              btn.classList.add('playing');
+              currentlyPlayingAudio = audio;
+            } else {
+              audio.pause();
+              btn.classList.remove('playing');
+              if (currentlyPlayingAudio === audio) currentlyPlayingAudio = null;
+            }
+          } catch (err) {
+            // If autoplay blocked, resume context and retry
+            try { if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume(); } catch {}
+            try { await audio.play(); btn.classList.add('playing'); currentlyPlayingAudio = audio; } catch {}
+          }
+        });
+
+        audio.addEventListener('play', () => btn.classList.add('playing'));
+        audio.addEventListener('pause', () => btn.classList.remove('playing'));
+        audio.addEventListener('ended', () => {
+          if (!audio.loop) {
+            btn.classList.remove('playing');
+            currentlyPlayingAudio = null;
+          }
+        });
+
+        // Seek
+        bar.addEventListener('pointerdown', (e) => {
+          const rect = bar.getBoundingClientRect();
+          const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+          if (isFinite(audio.duration)) audio.currentTime = x * audio.duration;
+        });
+
+        // Loop toggle
+        loop.addEventListener('click', (e) => {
+          e.preventDefault();
+          audio.loop = !audio.loop;
+          loop.classList.toggle('active', audio.loop);
+        });
+
+        return { open, close };
+      }
+
+      function closePlayer(playerEl) {
+        const audio = playerEl.querySelector('audio');
+        const btn = playerEl.querySelector('.btn.play');
+        const fill = playerEl.querySelector('.fill');
+        const cur = playerEl.querySelector('.current');
+        const tot = playerEl.querySelector('.total');
+        const loop = playerEl.querySelector('.loop');
+        playerEl.classList.remove('open');
+        try { audio.pause(); } catch {}
+        try { audio.currentTime = 0; } catch {}
+        audio.removeAttribute('src');
+        btn.classList.remove('playing');
+        fill.style.width = '0%';
+        cur.textContent = '0:00';
+        tot.textContent = '0:00';
+        loop.classList.remove('active');
+      }
+
+      // Initialize all items
+      document.querySelectorAll('.item').forEach(setupItem);
+
+      // Make the visualizer feel alive even before audio
+      (function softBootViz() {
+        if (gl) {
+          const boot = new Uint8Array(BAR_COUNT);
+          for (let i = 0; i < BAR_COUNT; i++) {
+            boot[i] = 18 + Math.floor(6 * Math.sin(i * 0.12));
+          }
+          updateFreqTexture(boot);
+        }
+      })();
+
+      // Stability: guard against console scraping of src
+      const shadowSrc = new WeakMap();
+      document.querySelectorAll('audio').forEach(a => {
+        shadowSrc.set(a, '');
+        Object.defineProperty(a, 'src', {
+          get() { return '[PROTECTED]'; },
+          set(v) {
+            shadowSrc.set(a, v);
+            a.setAttribute('src', v);
+          }
+        });
+      });
+
+      // Progressive enhancement: show canvas only after first paint
+      requestAnimationFrame(() => { canvas.style.opacity = '1'; });
+    </script>
+  </body>
+</html>
