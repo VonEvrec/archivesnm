@@ -1,1051 +1,740 @@
 <!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dana N'kassa</title>
-    <meta name="color-scheme" content="dark light" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' blob:;" />
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dana N'kassa</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    <style>
-      :root {
-        --bg-color: #0a0a0a;
-        --text-color: #ffffff;
-        --muted-color: #8e8e93;
-        --line-color: rgba(255,255,255,0.15);
-        --card-border: rgba(255,255,255,0.08);
-        --focus-ring: rgba(255,255,255,0.35);
-        --accent: #ffffff;
-        --radius: 16px;
-        --shadow-soft: 0 6px 30px rgba(0,0,0,0.35);
-        --blur-strength: 24px;
-        --max-w: 980px;
-      }
+    :root {
+      --bg-dark: #000000;
+      --text-primary: #f5f5f7;
+      --text-secondary: #86868b;
+      --blur-glass: rgba(255, 255, 255, 0.05);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+    }
 
-      @media (prefers-color-scheme: light) {
-        :root {
-          --bg-color: #ffffff;
-          --text-color: #0a0a0a;
-          --muted-color: #6b6b6f;
-          --line-color: rgba(0,0,0,0.12);
-          --card-border: rgba(0,0,0,0.08);
-          --focus-ring: rgba(0,0,0,0.35);
-          --accent: #0a0a0a;
-        }
-      }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      opacity: 0;
+      animation: pageEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
-      html, body { height: 100%; }
-      body {
-        margin: 0;
-        background: var(--bg-color);
-        color: var(--text-color);
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-        line-height: 1.45;
-        letter-spacing: -0.01em;
-        overflow-x: hidden;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
+    @keyframes pageEntry {
+      to { opacity: 1; }
+    }
 
-      /* Entry animation */
-      @keyframes fadeSlideUp {
-        0% { opacity: 0; transform: translateY(20px); }
-        100% { opacity: 1; transform: translateY(0); }
-      }
-      .fade-in {
+    /* === Enhanced Background Visualizer === */
+    .visualizer-container {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    canvas#visualizer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      filter: blur(80px) saturate(150%);
+      mix-blend-mode: screen;
+      animation: visualizerFadeIn 2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+    }
+
+    @keyframes visualizerFadeIn {
+      to { opacity: 0.35; }
+    }
+
+    .ambient-gradient {
+      position: absolute;
+      inset: -20%;
+      background: radial-gradient(circle at 30% 40%, 
+        rgba(0, 122, 255, 0.15) 0%,
+        rgba(175, 82, 222, 0.12) 30%,
+        rgba(255, 45, 85, 0.08) 60%,
+        transparent 80%);
+      animation: ambientDrift 25s ease-in-out infinite;
+      filter: blur(60px);
+    }
+
+    @keyframes ambientDrift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(3%, -2%) scale(1.05); }
+    }
+
+    /* === Header === */
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 60px 40px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      animation: headerSlide 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+    }
+
+    @keyframes headerSlide {
+      from { transform: translateY(-20px); opacity: 0; }
+    }
+
+    .brand {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #f5f5f7 0%, #86868b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .contact {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      position: relative;
+      padding-bottom: 2px;
+      transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .contact::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: var(--text-primary);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .contact:hover {
+      color: var(--text-primary);
+    }
+
+    .contact:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    /* === Main Content === */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 60px 40px 100px;
+    }
+
+    .track-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .track-item {
+      backdrop-filter: blur(40px);
+      background: var(--blur-glass);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: trackEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+
+    .track-item:nth-child(1) { animation-delay: 0.5s; }
+    .track-item:nth-child(2) { animation-delay: 0.55s; }
+    .track-item:nth-child(3) { animation-delay: 0.6s; }
+    .track-item:nth-child(4) { animation-delay: 0.65s; }
+    .track-item:nth-child(5) { animation-delay: 0.7s; }
+    .track-item:nth-child(n+6) { animation-delay: 0.75s; }
+
+    @keyframes trackEntry {
+      from {
         opacity: 0;
-        animation: fadeSlideUp 1s ease-out forwards;
+        transform: translateY(20px);
       }
-      .fade-in-delay {
-        opacity: 0;
-        animation: fadeSlideUp 1.2s ease-out forwards;
-        animation-delay: 0.3s;
+    }
+
+    .track-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .track-header {
+      padding: 24px 28px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .track-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      transition: color 0.3s ease;
+    }
+
+    .track-header:hover .track-name {
+      color: #06c;
+    }
+
+    .track-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .track-item.active .track-indicator {
+      background: #06c;
+      transform: scale(1.5);
+    }
+
+    /* === Audio Player === */
+    .player-container {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .track-item.active .player-container {
+      max-height: 200px;
+      opacity: 1;
+      padding: 0 28px 28px;
+    }
+
+    .audio-player {
+      backdrop-filter: blur(60px);
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .play-btn {
+      width: 44px;
+      height: 44px;
+      border: none;
+      background: var(--text-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    .play-btn:hover {
+      transform: scale(1.08);
+      background: #06c;
+    }
+
+    .play-btn:active {
+      transform: scale(0.96);
+    }
+
+    .play-icon, .pause-icon {
+      position: absolute;
+      color: var(--bg-dark);
+      font-size: 14px;
+      transition: all 0.25s ease;
+    }
+
+    .play-icon {
+      opacity: 1;
+      transform: scale(1);
+      padding-left: 2px;
+    }
+
+    .pause-icon {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+
+    .play-btn.playing .play-icon {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+
+    .play-btn.playing .pause-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .controls {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #06c, #0077ed);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    .time-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .loop-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border-subtle);
+      background: transparent;
+      border-radius: 50%;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+
+    .loop-btn:hover {
+      border-color: var(--text-primary);
+      color: var(--text-primary);
+    }
+
+    .loop-btn.active {
+      background: rgba(0, 122, 255, 0.2);
+      border-color: #06c;
+      color: #06c;
+    }
+
+    audio {
+      display: none;
+    }
+
+    /* === Footer === */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* === Responsive === */
+    @media (max-width: 768px) {
+      header {
+        padding: 40px 24px 24px;
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
       }
 
-      /* Background visualizer */
-      .visualizer-wrap {
-        position: fixed; inset: 0; z-index: -2; pointer-events: none; overflow: hidden;
-      }
-      canvas#gl {
-        position: absolute; inset: 0; width: 100%; height: 100%; display: block;
-        filter: blur(var(--blur-strength)) saturate(120%);
-        opacity: 0; transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      .visualizer-gradient {
-        position: absolute; inset: -15vh;
-        background: radial-gradient(120vh 120vh at 50% 50%,
-          rgba(255,0,128,0.08), rgba(0,128,255,0.08),
-          rgba(0,255,128,0.04), transparent 65%);
-        filter: blur(calc(var(--blur-strength) * 1.25));
-        opacity: 0.6; mix-blend-mode: screen;
-        animation: drift 40s linear infinite;
-      }
-      @keyframes drift {
-        0% { transform: translate3d(0,0,0) scale(1); }
-        50% { transform: translate3d(1.5rem,-1rem,0) scale(1.03); }
-        100% { transform: translate3d(0,0,0) scale(1); }
+      .brand {
+        font-size: 1.5rem;
       }
 
-      /* Header */
-      .header {
-        position: relative; z-index: 10;
-        padding: 42px 24px 24px;
-        display: flex; justify-content: space-between; align-items: center;
-        max-width: var(--max-w); margin: 0 auto;
+      main {
+        padding: 40px 24px 80px;
       }
-      .brand { font-weight: 700; font-size: clamp(1.4rem, 2vw, 1.8rem); letter-spacing: 0.06em; text-transform: uppercase; }
-      .contact { font-size: 0.9rem; color: var(--muted-color); cursor: pointer; position: relative; }
 
-      /* Main */
-      .main { position: relative; z-index: 5; max-width: var(--max-w); margin: 0 auto; padding: 8px 24px 60px; }
-      .intro { color: var(--muted-color); margin-bottom: 18px; font-size: 0.95rem; }
+      .track-header {
+        padding: 20px 20px;
+      }
 
-      /* List */
-      .list { display: grid; gap: 16px; }
-      .item { border: 1px solid var(--card-border); border-radius: 16px; backdrop-filter: blur(12px) saturate(120%); background: rgba(255,255,255,0.02); box-shadow: var(--shadow-soft); overflow: hidden; transition: transform 300ms; }
-      .item:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.15); }
-      .row { display: flex; align-items: center; gap: 20px; padding: 16px; }
-      .track { min-width: 120px; font-size: 0.9rem; color: var(--muted-color); cursor: pointer; }
+      .track-name {
+        font-size: 1rem;
+      }
 
-      /* Player */
-      .player { padding: 14px 16px 18px; border-top: 1px solid var(--line-color); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; max-height: 0; opacity: 0; transform: translateY(-6px); transition: all 420ms; }
-      .player.open { max-height: 220px; opacity: 1; transform: translateY(0); }
+      .audio-player {
+        flex-direction: column;
+        gap: 16px;
+      }
 
-      .btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line-color); background: transparent; display: grid; place-items: center; color: var(--text-color); cursor: pointer; }
-      .icons { position: relative; width: 14px; height: 14px; }
-      .icon-play, .icon-pause { position: absolute; inset: 0; font-size: 14px; line-height: 14px; transition: opacity 140ms ease; }
-      .icon-play { opacity: 1; } .icon-pause { opacity: 0; }
-      .btn.playing .icon-play { opacity: 0; } .btn.playing .icon-pause { opacity: 1; }
+      .play-btn {
+        width: 52px;
+        height: 52px;
+      }
+    }
 
-      .controls { display: grid; gap: 10px; }
-      .bar { position: relative; width: 100%; height: 2px; background: var(--line-color); cursor: pointer; }
-      .bar > .fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: rgba(255,255,255,0.65); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Visualizer -->
+  <div class="visualizer-container">
+    <canvas id="visualizer"></canvas>
+    <div class="ambient-gradient"></div>
+  </div>
 
-      .time { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted-color); }
-      .loop { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-color); background: transparent; color: var(--muted-color); cursor: pointer; }
-      .loop.active { color: var(--text-color); background: rgba(255,255,255,0.06); border-color: var(--focus-ring); }
+  <!-- Header -->
+  <header>
+    <h1 class="brand">DANA N'KASSA</h1>
+    <a href="mailto:contact.danankassa@gmail.com" class="contact">contact.danankassa@gmail.com</a>
+  </header>
 
-      footer { position: relative; z-index: 5; max-width: var(--max-w); margin: 0 auto; padding: 32px 24px 50px; font-size: 0.9rem; color: var(--muted-color); border-top: 1px solid var(--line-color); }
-    </style>
-  </head>
-  <body>
-    <div class="visualizer-wrap" aria-hidden="true">
-      <canvas id="gl"></canvas>
-      <div class="visualizer-gradient"></div>
-    </div>
-
-    <header class="header fade-in">
-      <div class
-        <div class="main-content">
-      <div class="music-list">
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-205.mp3">NM-205</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
+  <!-- Main Content -->
+  <main>
+    <div class="track-list">
+      <div class="track-item" data-audio="NM-205.mp3">
+        <div class="track-header">
+          <span class="track-name">NM-205</span>
+          <div class="track-indicator"></div>
+        </div>
+        <div class="player-container">
+          <div class="audio-player">
+            <button class="play-btn" aria-label="Play">
+              <span class="play-icon">▶</span>
+              <span class="pause-icon">❚❚</span>
+            </button>
+            <div class="controls">
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
               </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
+              <div class="time-info">
+                <span class="current-time">0:00</span>
+                <span class="total-time">0:00</span>
+              </div>
             </div>
+            <button class="loop-btn" aria-label="Loop">⟲</button>
+            <audio preload="none"></audio>
           </div>
         </div>
+      </div>
 
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-209.mp3">NM-209</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
+      <div class="track-item" data-audio="NM-209.mp3">
+        <div class="track-header">
+          <span class="track-name">NM-209</span>
+          <div class="track-indicator"></div>
+        </div>
+        <div class="player-container">
+          <div class="audio-player">
+            <button class="play-btn" aria-label="Play">
+              <span class="play-icon">▶</span>
+              <span class="pause-icon">❚❚</span>
+            </button>
+            <div class="controls">
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
               </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
+              <div class="time-info">
+                <span class="current-time">0:00</span>
+                <span class="total-time">0:00</span>
+              </div>
             </div>
+            <button class="loop-btn" aria-label="Loop">⟲</button>
+            <audio preload="none"></audio>
           </div>
         </div>
+      </div>
 
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-208.mp3">NM-208</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
+      <div class="track-item" data-audio="NM-208.mp3">
+        <div class="track-header">
+          <span class="track-name">NM-208</span>
+          <div class="track-indicator"></div>
+        </div>
+        <div class="player-container">
+          <div class="audio-player">
+            <button class="play-btn" aria-label="Play">
+              <span class="play-icon">▶</span>
+              <span class="pause-icon">❚❚</span>
+            </button>
+            <div class="controls">
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
               </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
+              <div class="time-info">
+                <span class="current-time">0:00</span>
+                <span class="total-time">0:00</span>
+              </div>
             </div>
+            <button class="loop-btn" aria-label="Loop">⟲</button>
+            <audio preload="none"></audio>
           </div>
         </div>
+      </div>
 
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-197.mp3">NM-197</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
+      <div class="track-item" data-audio="NM-197.mp3">
+        <div class="track-header">
+          <span class="track-name">NM-197</span>
+          <div class="track-indicator"></div>
+        </div>
+        <div class="player-container">
+          <div class="audio-player">
+            <button class="play-btn" aria-label="Play">
+              <span class="play-icon">▶</span>
+              <span class="pause-icon">❚❚</span>
+            </button>
+            <div class="controls">
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
               </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
+              <div class="time-info">
+                <span class="current-time">0:00</span>
+                <span class="total-time">0:00</span>
+              </div>
             </div>
+            <button class="loop-btn" aria-label="Loop">⟲</button>
+            <audio preload="none"></audio>
           </div>
         </div>
+      </div>
 
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-153.mp3">NM-153</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
+      <div class="track-item" data-audio="NM-153.mp3">
+        <div class="track-header">
+          <span class="track-name">NM-153</span>
+          <div class="track-indicator"></div>
+        </div>
+        <div class="player-container">
+          <div class="audio-player">
+            <button class="play-btn" aria-label="Play">
+              <span class="play-icon">▶</span>
+              <span class="pause-icon">❚❚</span>
+            </button>
+            <div class="controls">
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
               </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
+              <div class="time-info">
+                <span class="current-time">0:00</span>
+                <span class="total-time">0:00</span>
+              </div>
             </div>
+            <button class="loop-btn" aria-label="Loop">⟲</button>
+            <audio preload="none"></audio>
           </div>
         </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-155.mp3">NM-155</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-157.mp3">NM-157</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-156.mp3">NM-156</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-158.mp3">NM-158</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-120.mp3">NM-120</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-092.mp3">NM-092</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-087.mp3">NM-087</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-046.mp3">NM-046</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-027.mp3">NM-027</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-044.mp3">NM-044</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-042.mp3">NM-042</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-        <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-064.mp3">NM-064</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-     <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-084.mp3">NM-084</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-079.mp3">NM-079</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-073.mp3">NM-073</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-072.mp3">NM-072</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-020.mp3">NM-020</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
-      <div class="music-item">
-          <div class="music-header">
-            <div class="track-name toggle" data-audio="NM-037.mp3">NM-037</div>
-          </div>
-          <div class="content">
-            <div class="audio-player">
-              <button class="play-button">
-                <span class="play-icon">▶</span>
-                <span class="pause-icon">◌</span>
-              </button>
-              <div class="audio-controls">
-                <div class="progress-container">
-                  <div class="progress-bar"></div>
-                </div>
-                <div class="time-display">
-                  <span class="current-time">0:00</span>
-                  <span class="total-time">0:00</span>
-                </div>
-              </div>
-              
-              <button class="loop-button">⟲</button>
-              <audio preload="none" crossorigin="anonymous"></audio>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
+  </main>
 
-    <footer>© Dana N'kassa</footer>
+  <!-- Footer -->
+  <footer>© 2025 Dana N'kassa. All rights reserved.</footer>
 
-    <script>
-      
+  <script>
+    // === Particle Visualizer ===
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let animationId;
 
-      // Sécurité renforcée
-      const securityMeasures = {
-        preventRightClick: () => {
-          document.addEventListener('contextmenu', e => {
-            if (e.target.tagName === 'AUDIO' || e.target.closest('.audio-player')) {
-              e.preventDefault();
-              return false;
-            }
-          });
-        },
-        
-        preventKeyboardShortcuts: () => {
-          document.addEventListener('keydown', (e) => {
-            // Empêcher Ctrl+S, Ctrl+Shift+I, F12, etc.
-            if ((e.ctrlKey || e.metaKey) && (
-              e.key === 's' || e.key === 'S' ||
-              e.key === 'u' || e.key === 'U' ||
-              (e.shiftKey && (e.key === 'I' || e.key === 'i'))
-            )) {
-              e.preventDefault();
-              return false;
-            }
-            if (e.key === 'F12') {
-              e.preventDefault();
-              return false;
-            }
-          });
-        },
-        
-        obfuscateAudioSrc: (originalSrc) => {
-          // Ajouter des paramètres aléatoires pour compliquer l'accès direct
-          const timestamp = Date.now();
-          const random = Math.random().toString(36).substring(7);
-          return `${originalSrc}?t=${timestamp}&r=${random}`;
-        }
-      };
-
-      // Initialiser les mesures de sécurité
-      securityMeasures.preventRightClick();
-      securityMeasures.preventKeyboardShortcuts();
-
-      
-
-      function resetAudioPlayer(content) {
-        const audio = content.querySelector('audio');
-        const playButton = content.querySelector('.play-button');
-        const progressBar = content.querySelector('.progress-bar');
-        const currentTimeSpan = content.querySelector('.current-time');
-        const totalTimeSpan = content.querySelector('.total-time');
-        const loopButton = content.querySelector('.loop-button');
-        
-        // Arrêter et réinitialiser l'audio
-        if (audio) {
-          audio.pause();
-          audio.currentTime = 0;
-          audio.src = '';
-        }
-        
-        // Réinitialiser l'interface
-        playButton.classList.remove('playing');
-        progressBar.style.width = '0%';
-        currentTimeSpan.textContent = '0:00';
-        totalTimeSpan.textContent = '0:00';
-        loopButton.classList.remove('active');
-        
-        
-      }
-
-      document.querySelectorAll('.toggle').forEach(link => {
-        link.addEventListener('click', function (e) {
-          e.preventDefault();
-          const parent = this.closest('.music-item');
-          const content = parent.querySelector('.content');
-          const isOpen = content.classList.contains('open');
-
-          // Fermer tous les autres lecteurs et les réinitialiser
-          document.querySelectorAll('.content.open').forEach(otherContent => {
-            if (otherContent !== content) {
-              otherContent.classList.remove('open');
-              resetAudioPlayer(otherContent);
-            }
-          });
-
-          if (!isOpen) {
-            const audioSrc = this.dataset.audio;
-            const audio = content.querySelector('audio');
-            const playButton = content.querySelector('.play-button');
-            const progressBar = content.querySelector('.progress-bar');
-            const progressContainer = content.querySelector('.progress-container');
-            const currentTimeSpan = content.querySelector('.current-time');
-            const totalTimeSpan = content.querySelector('.total-time');
-            const loopButton = content.querySelector('.loop-button');
-            
-
-            // Réinitialiser avant de configurer
-            resetAudioPlayer(content);
-
-            // Configurer l'audio avec sécurité renforcée
-            const secureAudioSrc = securityMeasures.obfuscateAudioSrc(audioSrc);
-            audio.src = secureAudioSrc;
-            
-            // Sécurité supplémentaire
-            audio.addEventListener('contextmenu', e => e.preventDefault());
-            audio.controlsList = 'nodownload noremoteplayback nofullscreen';
-            audio.disablePictureInPicture = true;
-            audio.preload = 'none';
-
-            // Auto-lecture au clic sur le titre
-            audio.addEventListener('canplaythrough', () => {
-  // Jouer automatiquement dès que c'est possible
-  const playPromise = audio.play();
-  if (playPromise !== undefined) {
-    playPromise.then(() => {
-      playButton.classList.add('playing');
-      currentlyPlaying = audio;
-      
-      
-    }).catch(e => {
-      console.log('Autoplay nécessite une interaction utilisateur');
-      // Forcer la lecture au premier clic
-      playButton.click();
-    });
-  }
-});
-
-// Forcer le chargement et la lecture
-audio.load();
-
-            // Gestion du bouton play/pause
-            let isProcessing = false; // Prévient les double-clics
-
-playButton.addEventListener('click', async (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  
-  if (isProcessing) return;
-  isProcessing = true;
-  
-  try {
-    if (audio.paused) {
-      // Arrêter tout autre audio en cours
-      if (currentlyPlaying && currentlyPlaying !== audio) {
-        currentlyPlaying.pause();
-        document.querySelectorAll('.play-button.playing').forEach(btn => {
-          btn.classList.remove('playing');
-        });
-      }
-      
-      // Mise à jour immédiate de l'UI
-      playButton.classList.add('playing');
-      
-      await audio.play();
-      currentlyPlaying = audio;
-    } else {
-      // Mise à jour immédiate de l'UI
-      playButton.classList.remove('playing');
-      
-      audio.pause();
-      currentlyPlaying = null;
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
-  } catch (error) {
-    console.error('Erreur de lecture:', error);
-    playButton.classList.remove('playing');
-    currentlyPlaying = null;
-  }
-  
-  
-  setTimeout(() => {
-    isProcessing = false;
-  }, 100);
-});
 
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.radius = Math.random() * 2 + 1;
+        this.hue = Math.random() * 60 + 200;
+      }
 
-playButton.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  playButton.style.transform = 'scale(0.95)';
-}, { passive: false });
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
 
-playButton.addEventListener('touchend', (e) => {
-  e.preventDefault();
-  playButton.style.transform = '';
-}, { passive: false });
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+      }
 
-            
-            let updateTimeoutId = null;
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue}, 80%, 60%, 0.6)`;
+        ctx.fill();
+      }
+    }
 
-audio.addEventListener('timeupdate', () => {
-  if (updateTimeoutId) return;
-  
-  updateTimeoutId = requestAnimationFrame(() => {
-    const progress = (audio.currentTime / audio.duration) * 100;
-    progressBar.style.width = progress + '%';
-    currentTimeSpan.textContent = formatTime(audio.currentTime);
-    updateTimeoutId = null;
-  });
-});
+    function initParticles() {
+      particles = [];
+      const particleCount = Math.min(80, Math.floor(window.innerWidth / 20));
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    }
 
+    function animate() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-audio.addEventListener('play', () => {
-  if (!playButton.classList.contains('playing')) {
-    playButton.classList.add('playing');
-  }
-});
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
 
-audio.addEventListener('pause', () => {
-  if (playButton.classList.contains('playing')) {
-    playButton.classList.remove('playing');
-  }
-});
+      animationId = requestAnimationFrame(animate);
+    }
 
+    resizeCanvas();
+    initParticles();
+    animate();
 
-audio.addEventListener('ended', () => {
-  if (!audio.loop) {
-    playButton.classList.remove('playing');
-    currentlyPlaying = null;
-  }
-});
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      initParticles();
+    });
 
-           
-            audio.addEventListener('error', (e) => {
-              console.error('Erreur de lecture audio:', e);
-              playButton.classList.remove('playing');
-              
-              currentlyPlaying = null;
-            });
+    // === Audio Player Logic ===
+    let currentAudio = null;
+    let currentTrack = null;
 
-            content.classList.add('open');
+    document.querySelectorAll('.track-item').forEach(track => {
+      const header = track.querySelector('.track-header');
+      const audio = track.querySelector('audio');
+      const playBtn = track.querySelector('.play-btn');
+      const progressBar = track.querySelector('.progress-bar');
+      const progressFill = track.querySelector('.progress-fill');
+      const currentTimeEl = track.querySelector('.current-time');
+      const totalTimeEl = track.querySelector('.total-time');
+      const loopBtn = track.querySelector('.loop-btn');
+      const audioSrc = track.dataset.audio;
 
+      // Toggle track expansion
+      header.addEventListener('click', () => {
+        const isActive = track.classList.contains('active');
 
-setTimeout(() => {
-  if (audio.readyState >= 2) { // HAVE_CURRENT_DATA
-    audio.play().then(() => {
-      playButton.classList.add('playing');
-      currentlyPlaying = audio;
-      
-      
-    }).catch(e => console.log('Lecture manuelle requise'));
-  }
-}, 100);
-          } else {
-            
-            content.classList.remove('open');
-            resetAudioPlayer(content);
-            if (currentlyPlaying && currentlyPlaying === content.querySelector('audio')) {
-              currentlyPlaying = null;
-            }
+        // Close all tracks
+        document.querySelectorAll('.track-item').forEach(t => {
+          t.classList.remove('active');
+          const a = t.querySelector('audio');
+          if (a && a !== audio) {
+            a.pause();
+            a.currentTime = 0;
+            t.querySelector('.play-btn').classList.remove('playing');
           }
         });
+
+        if (!isActive) {
+          track.classList.add('active');
+          if (!audio.src) {
+            audio.src = `/demos/${encodeURIComponent(audioSrc)}`;
+          }
+          currentTrack = track;
+          currentAudio = audio;
+        } else {
+          currentTrack = null;
+          currentAudio = null;
+        }
       });
 
-      function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
-        return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
+      // Play/Pause
+      playBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (audio.paused) {
+          if (currentAudio && currentAudio !== audio) {
+            currentAudio.pause();
+            document.querySelector('.play-btn.playing')?.classList.remove('playing');
+          }
+          audio.play();
+          playBtn.classList.add('playing');
+          currentAudio = audio;
+        } else {
+          audio.pause();
+          playBtn.classList.remove('playing');
+        }
+      });
+
+      // Update progress
+      audio.addEventListener('timeupdate', () => {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = `${progress}%`;
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+      });
+
+      audio.addEventListener('loadedmetadata', () => {
+        totalTimeEl.textContent = formatTime(audio.duration);
+      });
+
+      // Seek
+      progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+      });
+
+      // Loop
+      loopBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        audio.loop = !audio.loop;
+        loopBtn.classList.toggle('active');
+      });
+
+      // Auto-reset on end
+      audio.addEventListener('ended', () => {
+        if (!audio.loop) {
+          playBtn.classList.remove('playing');
+          audio.currentTime = 0;
+        }
+      });
+    });
+
+    function formatTime(sec) {
+      if (isNaN(sec)) return '0:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // Security
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'u' || (e.shiftKey && e.key === 'i'))) {
+        e.preventDefault();
       }
-
-     
-      if (typeof DevTools !== 'undefined') {
-        DevTools.close();
-      }
-
-     
-      document.addEventListener('selectstart', (e) => {
-        if (e.target.closest('.audio-player')) {
-          e.preventDefault();
-        }
-      });
-
-      
-      document.addEventListener('dragstart', (e) => {
-        if (e.target.closest('.audio-player')) {
-          e.preventDefault();
-        }
-      });
-
-      
-      const originalLog = console.log;
-      console.log = function(...args) {
-        const argsStr = args.join(' ');
-        if (!argsStr.includes('demo') && !argsStr.includes('.mp3')) {
-          originalLog.apply(console, args);
-        }
-      };
-
-      
-
-      
-      window.addEventListener('load', () => {
-        document.querySelectorAll('audio').forEach(audio => {
-          audio.addEventListener('loadstart', () => {
-            
-            Object.defineProperty(audio, 'src', {
-              get: () => '[PROTECTED]',
-              set: (value) => {
-                audio.setAttribute('src', value);
-              }
-            });
-          });
-        });
-      });
-    </script>
-  </body>
+      if (e.key === 'F12') e.preventDefault();
+    });
+  </script>
+</body>
 </html>
